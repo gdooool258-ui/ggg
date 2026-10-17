@@ -173,23 +173,26 @@
             100% { transform: translateY(-15px) rotate(10deg); }
         }
 
-        /* Ludo Board 3D Preview */
+        /* Ludo Board 3D Interactive UI */
         .ludo-board-preview {
-            width: 180px;
-            height: 180px;
+            width: 220px;
+            height: 220px;
             margin: 10px auto;
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 5px;
-            transform: rotateX(30deg) rotateZ(-10deg);
+            transform: rotateX(20deg);
             box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            background: #fff;
+            padding: 5px;
+            border-radius: 15px;
         }
 
-        .ludo-zone { border-radius: 10px; }
-        .red { background: #ff4757; }
-        .green { background: #2ed573; }
-        .yellow { background: #ffa502; }
-        .blue { background: #1e90ff; }
+        .ludo-zone { border-radius: 10px; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 14px; }
+        .red { background: #ff4757; color: #fff; }
+        .green { background: #2ed573; color: #fff; }
+        .yellow { background: #ffa502; color: #fff; }
+        .blue { background: #1e90ff; color: #fff; }
 
         /* Bottom Nav & Chat */
         .bottom-nav {
@@ -216,7 +219,7 @@
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.85);
             justify-content: center;
             align-items: center;
             z-index: 999;
@@ -260,6 +263,25 @@
             color: #fff;
         }
 
+        /* Voice Mic Controls */
+        .mic-btn {
+            background: #2ed573;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px 0;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .mic-btn.muted {
+            background: #ff4757;
+        }
+
         /* Admin Dashboard */
         .admin-table {
             width: 100%;
@@ -281,6 +303,23 @@
         }
         .online { background: #2ed573; }
         .offline { background: #ff4757; }
+
+        /* Dice Rolling */
+        .dice-btn {
+            font-size: 40px;
+            cursor: pointer;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid var(--gold);
+            border-radius: 15px;
+            padding: 10px 25px;
+            display: inline-block;
+            margin: 15px 0;
+            transition: transform 0.2s;
+        }
+
+        .dice-btn:active {
+            transform: scale(0.9) rotate(20deg);
+        }
     </style>
 </head>
 <body>
@@ -343,15 +382,15 @@
             </div>
 
             <!-- Ludo Game Card -->
-            <div class="game-card card-3d" onclick="alert('جاري تجهيز طاولة اللودو الـ 3D التفاعلية!')">
-                <h3>لعبة لودو Ludo 3D</h3>
+            <div class="game-card card-3d" onclick="openLudoMenu()">
+                <h3>لعبة لودو Ludo 3D أونلاين</h3>
                 <div class="ludo-board-preview">
-                    <div class="ludo-zone red"></div>
-                    <div class="ludo-zone green"></div>
-                    <div class="ludo-zone blue"></div>
-                    <div class="ludo-zone yellow"></div>
+                    <div class="ludo-zone red">أحمر</div>
+                    <div class="ludo-zone green">أخضر</div>
+                    <div class="ludo-zone blue">أزرق</div>
+                    <div class="ludo-zone yellow">أصفر</div>
                 </div>
-                <p>تحدَّ أصدقاءك في طاولة اللودو المجسمة</p>
+                <p>غرف خاصة، دعوة الأصدقاء وميزة الشات الصوتي المباشر! 🎙️</p>
             </div>
         </div>
 
@@ -381,7 +420,51 @@
         </div>
     </div>
 
-    <!-- 4. SOCIAL & FRIENDS MODAL -->
+    <!-- 4. LUDO GAME MODAL WITH PRIVATE ROOM & VOICE MIC -->
+    <div id="ludo-modal" class="modal">
+        <div class="modal-content card-3d" style="text-align: center;">
+            <h3>🎲 غرفة اللودو 3D أونلاين</h3>
+            
+            <div id="ludo-select-mode">
+                <p>اختر طريقة اللعب:</p>
+                <button onclick="createPrivateLudoRoom()" style="padding: 12px 20px; margin: 8px; border-radius: 10px; background: var(--accent); border: none; color: #fff; font-weight: bold;">🔒 إنشاء غرفة خاصة ودعوة صديق</button>
+                <button onclick="startLudoGame('global_ludo_room')" style="padding: 12px 20px; margin: 8px; border-radius: 10px; background: var(--primary); border: none; color: #fff; font-weight: bold;">🌐 دخول الغرفة العامة</button>
+            </div>
+
+            <div id="ludo-board-area" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <span id="ludo-room-code" style="color: var(--gold); font-size: 13px;">كود الغرفة: ----</span>
+                    <button class="mic-btn" id="mic-toggle-btn" onclick="toggleVoiceMic()"><i class="fa-solid fa-microphone"></i> المايك: مغلق</button>
+                </div>
+
+                <!-- Invite Friend Box inside Room -->
+                <div id="invite-friend-box" style="margin-bottom: 10px; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 10px;">
+                    <label style="font-size: 12px;">دعوة صديق للغرفة:</label>
+                    <select id="invite-friends-dropdown" style="padding: 5px; border-radius: 5px; background: rgba(255,255,255,0.1); color: #fff; border: none;">
+                        <option value="">اختر صديقاً...</option>
+                    </select>
+                    <button onclick="sendRoomInvite()" style="padding: 5px 10px; background: var(--accent); border: none; border-radius: 5px; color: #fff; font-weight: bold;">إرسال دعوة</button>
+                </div>
+
+                <!-- Ludo Interactive Board -->
+                <div class="ludo-board-preview" style="width: 250px; height: 250px;">
+                    <div id="zone-red" class="ludo-zone red">🔴 <span id="pos-red">0</span></div>
+                    <div id="zone-green" class="ludo-zone green">🟢 <span id="pos-green">0</span></div>
+                    <div id="zone-blue" class="ludo-zone blue">🔵 <span id="pos-blue">0</span></div>
+                    <div id="zone-yellow" class="ludo-zone yellow">🟡 <span id="pos-yellow">0</span></div>
+                </div>
+
+                <!-- Dice Rolling Area -->
+                <div class="dice-btn" id="ludo-dice-display" onclick="rollLudoDice()">🎲 <span>رمي النرد</span></div>
+                
+                <p id="ludo-status-msg" style="font-size: 13px; color: #ccc;">اضغط على النرد للعب دورك!</p>
+            </div>
+
+            <button onclick="closeModal('ludo-modal')" style="margin-top: 20px; background: #ff4757; border: none; padding: 8px 15px; border-radius: 8px; color: #fff;">إغلاق الغرفة</button>
+        </div>
+    </div>
+
+    <!-- 5. SOCIAL & FRIENDS MODAL -->
     <div id="social-modal" class="modal">
         <div class="modal-content card-3d">
             <h3>إضافة صديق</h3>
@@ -397,7 +480,7 @@
         </div>
     </div>
 
-    <!-- 5. CHAT MODAL -->
+    <!-- 6. CHAT MODAL -->
     <div id="chat-modal" class="modal">
         <div class="modal-content card-3d">
             <h3 id="chat-header-title">الشات والمحادثات</h3>
@@ -418,7 +501,7 @@
         </div>
     </div>
 
-    <!-- 6. ADMIN DASHBOARD MODAL -->
+    <!-- 7. ADMIN DASHBOARD MODAL -->
     <div id="admin-modal" class="modal">
         <div class="modal-content card-3d" style="max-width: 700px; overflow-x: auto;">
             <h3>لوحة تحكم الأدمن (خاصة بـ Mahmoud)</h3>
@@ -454,7 +537,13 @@
         }
         const db = firebase.database();
 
-        // --- 2. DEVICE FINGERPRINT & LOCAL STORAGE ---
+        // --- 2. GLOBAL VARIABLES ---
+        let currentUser = null;
+        let activeChatFriend = null;
+        let currentLudoRoom = 'global_ludo_room';
+        let localStream = null;
+        let isMicOn = false;
+
         function getDeviceId() {
             let devId = localStorage.getItem('m_device_id');
             if (!devId) {
@@ -463,9 +552,6 @@
             }
             return devId;
         }
-
-        let currentUser = null;
-        let activeChatFriend = null;
 
         // --- 3. AUTO LOGIN CHECK ---
         window.onload = function() {
@@ -597,7 +683,101 @@
             alert(`🎉 مبروك! استلمت ${reward} عملة صفراء M!`);
         }
 
-        // --- 6. SOCIAL, FRIENDS & REALTIME CHAT ---
+        // --- 6. LUDO PRIVATE ROOM, INVITES & MIC SYSTEM ---
+        function openLudoMenu() {
+            document.getElementById('ludo-modal').style.display = 'flex';
+            document.getElementById('ludo-select-mode').style.display = 'block';
+            document.getElementById('ludo-board-area').style.display = 'none';
+        }
+
+        function createPrivateLudoRoom() {
+            const randomCode = Math.floor(1000 + Math.random() * 9000).toString();
+            currentLudoRoom = 'room_' + randomCode;
+            document.getElementById('ludo-room-code').innerText = 'غرفة خاصة: #' + randomCode;
+            startLudoGame(currentLudoRoom);
+        }
+
+        function startLudoGame(roomId) {
+            currentLudoRoom = roomId;
+            document.getElementById('ludo-select-mode').style.display = 'none';
+            document.getElementById('ludo-board-area').style.display = 'block';
+
+            if (roomId === 'global_ludo_room') {
+                document.getElementById('ludo-room-code').innerText = 'الغرفة العامة';
+            }
+
+            // Listen to Ludo Room in Firebase
+            db.ref('ludo_rooms/' + currentLudoRoom).on('value', snap => {
+                if (snap.exists()) {
+                    const roomData = snap.val();
+                    if (roomData.lastRoll) {
+                        document.getElementById('ludo-dice-display').innerHTML = `🎲 <span>${roomData.lastRoll}</span>`;
+                        document.getElementById('ludo-status-msg').innerText = `آخر رمية من ${roomData.lastPlayer}: حصل على ${roomData.lastRoll}!`;
+                    }
+                    if (roomData.positions) {
+                        document.getElementById('pos-red').innerText = roomData.positions.red || 0;
+                        document.getElementById('pos-green').innerText = roomData.positions.green || 0;
+                        document.getElementById('pos-blue').innerText = roomData.positions.blue || 0;
+                        document.getElementById('pos-yellow').innerText = roomData.positions.yellow || 0;
+                    }
+                }
+            });
+        }
+
+        function sendRoomInvite() {
+            const select = document.getElementById('invite-friends-dropdown');
+            const friendName = select.value;
+            if (!friendName) return alert("اختر صديقاً أولاً لرسال الدعوة!");
+
+            const roomId = getChatRoomId(currentUser.username, friendName);
+            db.ref(`chats/${roomId}`).push({
+                sender: currentUser.username,
+                text: `🎮 دعوة للعب لودو! اضغط هنا للانضمام إلى الغرفة: <button onclick="startLudoGame('${currentLudoRoom}'); closeModal('chat-modal'); openLudoMenu();" style="background:#2ed573; border:none; color:#fff; padding:4px 8px; border-radius:5px; cursor:pointer;">انضمام للغرفة</button>`,
+                time: Date.now()
+            });
+
+            alert(`تم إرسال دعوة الغرفة بنجاح إلى ${friendName}!`);
+        }
+
+        function rollLudoDice() {
+            const diceValue = Math.floor(Math.random() * 6) + 1;
+            
+            db.ref('ludo_rooms/' + currentLudoRoom).once('value', snap => {
+                let currentPos = (snap.exists() && snap.val().positions && snap.val().positions.red) ? snap.val().positions.red : 0;
+                let newPos = currentPos + diceValue;
+
+                db.ref('ludo_rooms/' + currentLudoRoom).update({
+                    lastRoll: diceValue,
+                    lastPlayer: currentUser.username,
+                    'positions/red': newPos
+                });
+            });
+        }
+
+        // Voice Chat Microphone Logic
+        async function toggleVoiceMic() {
+            const micBtn = document.getElementById('mic-toggle-btn');
+            if (!isMicOn) {
+                try {
+                    localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    isMicOn = true;
+                    micBtn.innerHTML = `<i class="fa-solid fa-microphone"></i> المايك: يعمل 🟢`;
+                    micBtn.classList.remove('muted');
+                    alert("🎙️ تم تشغيل المايك المباشر! يمكنك التحدث الآن مع أصدقائك.");
+                } catch (err) {
+                    alert("لم نتمكن من الوصول للميكروفون، يرجى السماح بالوصول من المتصفح!");
+                }
+            } else {
+                if (localStream) {
+                    localStream.getTracks().forEach(track => track.stop());
+                }
+                isMicOn = false;
+                micBtn.innerHTML = `<i class="fa-solid fa-microphone-slash"></i> المايك: مغلق 🔴`;
+                micBtn.classList.add('muted');
+            }
+        }
+
+        // --- 7. SOCIAL, FRIENDS & REALTIME CHAT ---
         function sendFriendRequest() {
             const targetId = document.getElementById('friend-search-id').value.trim();
             if (!targetId || targetId === currentUser.id) return alert("أدخل ID صحيح وصديق مختلف!");
@@ -618,7 +798,6 @@
         }
 
         function listenForSocialUpdates() {
-            // Listen for Friend Requests
             db.ref(`requests/${currentUser.username}`).on('value', snap => {
                 const reqBox = document.getElementById('requests-list');
                 reqBox.innerHTML = '';
@@ -629,7 +808,7 @@
                 snap.forEach(child => {
                     const req = child.val();
                     reqBox.innerHTML += `
-                        <div style="display:flex; justify-between; align-items:center; background:rgba(255,255,255,0.1); padding:5px 10px; border-radius:8px; margin-bottom:5px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.1); padding:5px 10px; border-radius:8px; margin-bottom:5px;">
                             <span>لقد أضافك: <b>${req.from}</b></span>
                             <div>
                                 <button onclick="acceptFriend('${req.from}')" style="background:#2ed573; border:none; color:#fff; border-radius:4px; cursor:pointer;">قبول</button>
@@ -640,12 +819,14 @@
                 });
             });
 
-            // Listen for Friends List
             db.ref(`friends/${currentUser.username}`).on('value', snap => {
                 const friendsBox = document.getElementById('friends-list');
                 const selectBox = document.getElementById('chat-target-select');
+                const ludoInviteSelect = document.getElementById('invite-friends-dropdown');
+                
                 friendsBox.innerHTML = '';
                 selectBox.innerHTML = '<option value="">-- اختر صديقاً --</option>';
+                ludoInviteSelect.innerHTML = '<option value="">اختر صديقاً...</option>';
 
                 if (!snap.exists()) {
                     friendsBox.innerHTML = '- لا يوجد أصدقاء بعد -';
@@ -656,6 +837,7 @@
                     const friendName = child.key;
                     friendsBox.innerHTML += `<div style="padding:4px; color:var(--gold);"><i class="fa-solid fa-user"></i> ${friendName}</div>`;
                     selectBox.innerHTML += `<option value="${friendName}">${friendName}</option>`;
+                    ludoInviteSelect.innerHTML += `<option value="${friendName}">${friendName}</option>`;
                 });
             });
         }
@@ -723,7 +905,7 @@
             input.value = '';
         }
 
-        // --- 7. ADMIN DASHBOARD LOGIC ---
+        // --- 8. ADMIN DASHBOARD LOGIC ---
         function openAdminModal() {
             document.getElementById('admin-modal').style.display = 'flex';
             
@@ -765,7 +947,7 @@
             }
         }
 
-        // --- 8. ROCK PAPER SCISSORS GAME ---
+        // --- 9. ROCK PAPER SCISSORS GAME ---
         function openGameRPS() { document.getElementById('rps-modal').style.display = 'flex'; }
         
         function playRPS(choice) {
@@ -790,7 +972,7 @@
             }
         }
 
-        // --- 9. MODALS NAVIGATION ---
+        // --- 10. MODALS NAVIGATION ---
         function openSocialModal() { document.getElementById('social-modal').style.display = 'flex'; }
         function openChatModal() { document.getElementById('chat-modal').style.display = 'flex'; }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
