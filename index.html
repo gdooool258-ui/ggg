@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>M-Gaming World - Multi-Game Platform</title>
+    <title>M-Gaming World - Instant Realtime XO</title>
     <!-- FontAwesome & Google Fonts -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
@@ -11,9 +11,6 @@
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-
-    <!-- PeerJS for Voice -->
-    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 
     <style>
         :root {
@@ -296,8 +293,6 @@
 </head>
 <body>
 
-    <audio id="remote-audio" autoplay playsinline></audio>
-
     <!-- AUTH SCREEN -->
     <div id="auth-screen">
         <div class="auth-box card-3d">
@@ -338,7 +333,7 @@
             <div class="game-card card-3d" onclick="openGameXO()">
                 <h2 style="color: var(--accent); margin-bottom: 10px;">لعبة إكس أو (XO ⚡)</h2>
                 <div style="font-size: 55px; margin: 10px 0;">❌ ⭕</div>
-                <p>لعب مباشر تزامني مع أصدقائك في نفس اللحظة!</p>
+                <p>اضغط للعب المباشر وتحدي أصدقائك أونلاين!</p>
             </div>
         </div>
 
@@ -352,7 +347,7 @@
     <!-- ❌⭕ REALTIME XO GAME MODAL -->
     <div id="xo-modal" class="modal">
         <div class="modal-content card-3d" style="text-align: center;">
-            <h3 style="color: var(--accent);">❌⭕ لعبة إكس أو (مباشر لحظي)</h3>
+            <h3 style="color: var(--accent);">❌⭕ لعبة إكس أو (تزامن أونلاين)</h3>
 
             <div style="margin-bottom: 15px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px; display: flex; gap: 8px; justify-content: center;">
                 <select id="invite-xo-friends-dropdown" style="padding: 6px; border-radius: 6px; background: rgba(255,255,255,0.15); color: #fff; border: none; width: 60%;">
@@ -362,7 +357,7 @@
             </div>
 
             <div id="xo-players-tags" style="font-size: 13px; color: var(--gold); margin-bottom: 8px;">اللاعب 1: - | اللاعب 2: -</div>
-            <p id="xo-status-msg" style="font-size: 15px; color: #2ed573; font-weight: bold;">اختر صديقاً لبدء اللعبة!</p>
+            <p id="xo-status-msg" style="font-size: 15px; color: #2ed573; font-weight: bold;">جاري تهيئة الغرفة للعب...</p>
 
             <!-- 3x3 XO Board -->
             <div class="xo-grid">
@@ -478,7 +473,7 @@
         // XO Global Variables
         let currentXoRoom = null;
         let xoSymbol = 'X';
-        let xoBoard = Array(9).fill('');
+        let xoBoard = ["","","","","","","","",""];
 
         function getDeviceId() {
             let devId = localStorage.getItem('m_device_id');
@@ -569,7 +564,7 @@
             });
         }
 
-        // --- ❌⭕ REAL-TIME INSTANT XO LOGIC ---
+        // --- ❌⭕ AUTOMATIC & INSTANT XO ROOM CREATION ---
         function openGameXO(roomIdToJoin = null) {
             document.getElementById('xo-modal').style.display = 'flex';
 
@@ -606,17 +601,15 @@
                 const data = snap.val();
                 xoBoard = data.board || ["","","","","","","","",""];
 
-                // 1. Live Render Board to BOTH screens
+                // Render Board
                 const cells = document.querySelectorAll('.xo-cell');
                 cells.forEach((cell, idx) => {
                     cell.innerText = xoBoard[idx];
                     cell.style.color = xoBoard[idx] === 'X' ? '#ff007f' : '#ffd700';
                 });
 
-                // 2. Display Players
                 document.getElementById('xo-players-tags').innerText = `❌ (${data.p1 || '...'})  VS  ⭕ (${data.p2 || 'في انتظار الخصم...'})`;
 
-                // 3. Status & Turn Notice
                 const statusMsg = document.getElementById('xo-status-msg');
                 if (data.winner) {
                     if (data.winner === 'draw') {
@@ -632,7 +625,7 @@
                         statusMsg.innerText = `👉 دورك الآن للعب (${xoSymbol})!`;
                         statusMsg.style.color = "#2ed573";
                     } else {
-                        statusMsg.innerText = `⏳ في انتظار لعب الخصم (${data.turn})...`;
+                        statusMsg.innerText = `⏳ في انتظار دور الخصم (${data.turn})...`;
                         statusMsg.style.color = "#ff9f43";
                     }
                 }
@@ -640,18 +633,27 @@
         }
 
         function makeXoMove(index) {
-            if (!currentXoRoom) return alert("انضم لغرفة أولاً!");
-            if (xoBoard[index] !== '') return; // الخانة ملعوبة بالفعل
+            // Auto-create room if missing
+            if (!currentXoRoom) {
+                currentXoRoom = 'XO_ROOM_' + currentUser.username;
+                xoSymbol = 'X';
+                createXoRoom(currentXoRoom);
+            }
+
+            if (xoBoard[index] !== '') return;
 
             db.ref(`xo_rooms/${currentXoRoom}`).once('value', snap => {
-                const data = snap.val();
+                let data = snap.val();
+                if (!data) {
+                    createXoRoom(currentXoRoom);
+                    return;
+                }
+
                 if (data.winner) return alert("اللعبة انتهت بالفعل!");
                 if (data.turn !== xoSymbol) return alert("انتظر دور الخصم الأول!");
 
-                // Update Array
                 xoBoard[index] = xoSymbol;
 
-                // Check Parallel Lines (Winning Condition)
                 const winnerSymbol = checkParallelWinning(xoBoard);
                 let winnerName = '';
 
@@ -661,7 +663,6 @@
 
                 const nextTurn = xoSymbol === 'X' ? 'O' : 'X';
 
-                // Push to Firebase Realtime Database instantly
                 db.ref(`xo_rooms/${currentXoRoom}`).update({
                     board: xoBoard,
                     turn: nextTurn,
@@ -670,18 +671,17 @@
             });
         }
 
-        // 🏆 Check 3 in a Row (Horizontal, Vertical, Diagonal)
         function checkParallelWinning(b) {
             const parallelLines = [
-                [0,1,2], [3,4,5], [6,7,8], // 横 3 الأفقي
-                [0,3,6], [1,4,7], [2,5,8], // 縦 3 الرأسي
-                [0,4,8], [2,4,6]          // 斜 2 القطر المتوازي
+                [0,1,2], [3,4,5], [6,7,8],
+                [0,3,6], [1,4,7], [2,5,8],
+                [0,4,8], [2,4,6]
             ];
 
             for (let line of parallelLines) {
                 const [a, bIdx, c] = line;
                 if (b[a] && b[a] === b[bIdx] && b[a] === b[c]) {
-                    return b[a]; // الإشارة الفائزة X أو O
+                    return b[a];
                 }
             }
 
@@ -710,7 +710,7 @@
             const chatRoomId = getChatRoomId(currentUser.username, friendName);
             db.ref(`chats/${chatRoomId}`).push({
                 sender: currentUser.username,
-                text: `🎮 يدعوك لمباراة XO مباشرة! <button onclick="closeModal('chat-modal'); openGameXO('${roomId}');" style="background:#2ed573; border:none; color:#fff; padding:5px 10px; border-radius:5px; cursor:pointer;">دخول اللعبة</button>`,
+                text: `🎮 يدعوك لمباراة XO أونلاين! <button onclick="closeModal('chat-modal'); openGameXO('${roomId}');" style="background:#2ed573; border:none; color:#fff; padding:5px 10px; border-radius:5px; cursor:pointer;">دخول اللعبة</button>`,
                 time: Date.now()
             });
 
@@ -873,7 +873,6 @@
             input.value = '';
         }
 
-        function openGameXO() { document.getElementById('xo-modal').style.display = 'flex'; }
         function openSocialModal() { document.getElementById('social-modal').style.display = 'flex'; }
         function openChatModal() { document.getElementById('chat-modal').style.display = 'flex'; }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
