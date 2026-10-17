@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>M-Gaming World - True Multiplayer RPS</title>
+    <title>M-Gaming World - High Quality WebRTC Voice</title>
     <!-- FontAwesome & Google Fonts -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
@@ -11,6 +11,9 @@
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <!-- PeerJS for Reliable Voice WebRTC -->
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 
     <style>
         :root {
@@ -155,15 +158,6 @@
             min-height: 120px;
         }
 
-        .hand-shaking {
-            animation: shakeHand3D 0.5s infinite alternate ease-in-out;
-        }
-
-        @keyframes shakeHand3D {
-            0% { transform: translateY(0) rotate(0deg) scale(1); }
-            100% { transform: translateY(-25px) rotate(-15deg) scale(1.1); }
-        }
-
         .action-choice-btn {
             padding: 12px 20px;
             font-size: 16px;
@@ -181,66 +175,6 @@
             transform: scale(1.05);
         }
 
-        /* 🎁 3D Gifts Popup */
-        .gifts-popup {
-            display: none;
-            position: absolute;
-            bottom: 60px;
-            right: 10px;
-            left: 10px;
-            background: rgba(20, 15, 40, 0.95);
-            backdrop-filter: blur(15px);
-            border: 2px solid var(--gold);
-            border-radius: 15px;
-            padding: 15px;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            z-index: 100;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-        }
-
-        .gift-item {
-            background: rgba(255,255,255,0.1);
-            border-radius: 12px;
-            padding: 10px;
-            text-align: center;
-            cursor: pointer;
-            transition: transform 0.2s, background 0.2s;
-            border: 1px solid rgba(255,215,0,0.3);
-        }
-
-        .gift-item:hover {
-            transform: scale(1.1);
-            background: rgba(255,0,127,0.3);
-        }
-
-        @keyframes floatGift3D {
-            0% { transform: scale(0.3) translateY(40px) rotate(-10deg); opacity: 0; }
-            50% { transform: scale(1.3) translateY(-15px) rotate(10deg); opacity: 1; }
-            100% { transform: scale(1) translateY(0) rotate(0deg); opacity: 1; }
-        }
-
-        .gift-animation-box {
-            font-size: 55px;
-            display: inline-block;
-            animation: floatGift3D 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-            filter: drop-shadow(0 10px 15px rgba(255,215,0,0.6));
-        }
-
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            background: rgba(15, 12, 32, 0.95);
-            display: flex;
-            justify-content: space-around;
-            padding: 12px;
-            border-top: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .nav-item { color: #aaa; font-size: 20px; cursor: pointer; }
-        .nav-item.active { color: var(--accent); }
-
         .modal {
             display: none;
             position: fixed;
@@ -253,33 +187,12 @@
 
         .modal-content {
             width: 95%;
-            max-width: 550px;
+            max-width: 650px;
             padding: 25px;
             max-height: 95vh;
             overflow-y: auto;
             position: relative;
         }
-
-        .chat-box-container {
-            height: 220px;
-            overflow-y: auto;
-            background: rgba(0,0,0,0.3);
-            border-radius: 10px;
-            padding: 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-bottom: 10px;
-        }
-
-        .chat-msg {
-            max-width: 80%;
-            padding: 8px 12px;
-            border-radius: 12px;
-            font-size: 14px;
-        }
-        .chat-msg.me { align-self: flex-end; background: var(--primary); color: #fff; }
-        .chat-msg.other { align-self: flex-start; background: rgba(255,255,255,0.15); color: #fff; }
 
         .mic-btn {
             background: #2ed573;
@@ -297,7 +210,7 @@
         .mic-btn.muted { background: #ff4757; }
 
         .admin-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        .admin-table th, .admin-table td { padding: 10px; border: 1px solid rgba(255,255,255,0.1); text-align: center; font-size: 13px; }
+        .admin-table th, .admin-table td { padding: 10px; border: 1px solid rgba(255,255,255,0.1); text-align: center; font-size: 12px; }
         .status-dot { height: 10px; width: 10px; border-radius: 50%; display: inline-block; }
         .online { background: #2ed573; }
         .offline { background: #ff4757; }
@@ -305,7 +218,8 @@
 </head>
 <body>
 
-    <audio id="remote-audio" autoplay></audio>
+    <!-- Remote Audio Player -->
+    <audio id="remote-audio" autoplay playsinline></audio>
 
     <!-- AUTH SCREEN -->
     <div id="auth-screen">
@@ -313,7 +227,6 @@
             <h2 style="color: var(--gold);"><i class="fa-solid fa-gamepad"></i> مرحباً بك!</h2>
             <input type="text" id="auth-username" placeholder="اسم الحساب">
             <input type="password" id="auth-password" placeholder="كلمة السر">
-            
             <button onclick="handleLogin()">تسجيل الدخول</button>
             <button onclick="handleRegister()" style="background: rgba(255,255,255,0.1);">إنشاء حساب جديد</button>
             <p id="auth-error" style="color: #ff4757; font-size: 13px; margin-top: 10px;"></p>
@@ -324,22 +237,16 @@
     <div id="main-app">
         <div class="navbar card-3d">
             <div class="user-profile-header">
-                <img id="my-avatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=Mahmoud" class="profile-img" onclick="changeAvatar()">
+                <img id="my-avatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=Mahmoud" class="profile-img">
                 <div>
                     <h4 id="display-name" style="margin: 0;">-</h4>
                     <span id="display-id" style="font-size: 12px; color: var(--gold);">ID: ----</span>
                 </div>
             </div>
-            
             <div style="display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.3); padding: 8px 15px; border-radius: 20px;">
                 <span id="display-coins" style="font-weight: bold; font-size: 18px;">0</span>
                 <div class="m-coin">M</div>
             </div>
-        </div>
-
-        <div id="daily-banner" style="margin: 15px; padding: 15px; text-align: center; background: linear-gradient(45deg, #2ed573, #1e90ff); border-radius: 15px; display: none;">
-            <span>🎁 المكافأة اليومية جاهزة! احصل على <b id="reward-amount">10</b> عملة M</span>
-            <button onclick="claimDailyReward()" style="margin-right: 15px; padding: 6px 18px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer;">استلام الآن</button>
         </div>
 
         <div id="admin-trigger" style="display: none; padding: 0 20px; margin-top: 10px;">
@@ -351,41 +258,21 @@
         <h3 style="padding: 0 20px; margin-top: 20px;"><i class="fa-solid fa-trophy"></i> الألعاب المتاحة</h3>
         <div class="games-section">
             <div class="game-card card-3d" onclick="openGameRPS()">
-                <h2 style="color: var(--gold); margin-bottom: 10px;">طوبة ورقة مقص 3D أونلاين</h2>
+                <h2 style="color: var(--gold); margin-bottom: 10px;">طوبة ورقة مقص (صوت مباشر 🎙️)</h2>
                 <div style="font-size: 65px; margin: 15px 0;">✊ ✋ ✌️</div>
-                <p>تحدَّ أصدقاءك في غرف حقيقية، المايك الصوتي أونلاين، والهدايا المجسمة 🎙️!</p>
+                <p>تحدَّ أصدقاءك مع الصوت المباشر بجودة عالية ومضمونة!</p>
             </div>
-        </div>
-
-        <div class="bottom-nav">
-            <div class="nav-item active" onclick="closeAllModals()"><i class="fa-solid fa-house"></i></div>
-            <div class="nav-item" onclick="openSocialModal()"><i class="fa-solid fa-user-group"></i></div>
-            <div class="nav-item" onclick="openChatModal()"><i class="fa-solid fa-comments"></i></div>
         </div>
     </div>
 
-    <!-- RPS REAL ONLINE MULTIPLAYER GAME MODAL -->
+    <!-- RPS GAME MODAL -->
     <div id="rps-modal" class="modal">
         <div class="modal-content card-3d" style="text-align: center;">
-            <h3 style="color: var(--gold);">🎮 حلبة التحدي المباشر (Online Room)</h3>
+            <h3 style="color: var(--gold);">🎮 حلبة الصوت والتحدي</h3>
             
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <span id="rps-bet-tag" style="color: var(--gold); font-size: 13px; font-weight: bold;">غرفة التحدي: -</span>
-                <button class="mic-btn" id="mic-toggle-btn" onclick="toggleVoiceMic()"><i class="fa-solid fa-microphone"></i> المايك: مغلق</button>
-            </div>
-
-            <!-- Create / Invite Room Control -->
-            <div style="margin-bottom: 15px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px; display: flex; gap: 8px; align-items: center; justify-content: center; flex-wrap: wrap;">
-                <select id="rps-bet-amount" style="padding: 6px; border-radius: 6px; background: rgba(255,255,255,0.15); color: #fff; border: none;">
-                    <option value="5">5 عملات M</option>
-                    <option value="10" selected>10 عملات M</option>
-                    <option value="20">20 عملة M</option>
-                    <option value="50">50 عملة M</option>
-                </select>
-                <select id="invite-rps-friends-dropdown" style="padding: 6px; border-radius: 6px; background: rgba(255,255,255,0.15); color: #fff; border: none;">
-                    <option value="">اختر صديقاً لدعوته...</option>
-                </select>
-                <button onclick="sendRpsInvite()" style="padding: 6px 12px; background: var(--accent); border: none; border-radius: 6px; color: #fff; font-weight: bold;">إرسال دعوة</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <span id="voice-status" style="font-size: 13px; color: #aaa;">المايك متوقف</span>
+                <button class="mic-btn muted" id="mic-toggle-btn" onclick="togglePeerVoice()"><i class="fa-solid fa-microphone"></i> تشغيل المايك</button>
             </div>
 
             <div class="rps-hands-container">
@@ -396,82 +283,23 @@
                 <span style="font-size: 30px; color: var(--accent);">VS</span>
                 <div>
                     <div id="p2-hand" class="hand-box">🤜</div>
-                    <small id="p2-name-tag" style="font-size: 13px; color: #1e90ff;">في انتظار الخصم...</small>
+                    <small id="p2-name-tag" style="font-size: 13px; color: #1e90ff;">الخصم</small>
                 </div>
             </div>
 
-            <div id="rps-result" style="font-weight: bold; font-size: 15px; margin: 10px 0; color: #2ed573;">في انتظار انضمام الخصم واختيار اللعب...</div>
-
-            <div style="display: flex; justify-content: space-around; gap: 10px;">
-                <button class="action-choice-btn" onclick="playOnlineRpsChoice('rock')">✊ طوبة</button>
-                <button class="action-choice-btn" onclick="playOnlineRpsChoice('paper')">✋ ورقة</button>
-                <button class="action-choice-btn" onclick="playOnlineRpsChoice('scissors')">✌️ مقص</button>
+            <div style="display: flex; justify-content: space-around; gap: 10px; margin-top: 20px;">
+                <button class="action-choice-btn" onclick="playRpsAction('rock')">✊ طوبة</button>
+                <button class="action-choice-btn" onclick="playRpsAction('paper')">✋ ورقة</button>
+                <button class="action-choice-btn" onclick="playRpsAction('scissors')">✌️ مقص</button>
             </div>
 
-            <button onclick="leaveGameRPSRoom()" style="margin-top: 20px; background: #ff4757; border: none; padding: 8px 15px; border-radius: 8px; color: #fff; font-weight: bold;">مغادرة الغرفة</button>
-        </div>
-    </div>
-
-    <!-- SOCIAL MODAL -->
-    <div id="social-modal" class="modal">
-        <div class="modal-content card-3d">
-            <h3>إضافة صديق</h3>
-            <div style="display: flex; gap: 10px; margin: 15px 0;">
-                <input type="text" id="friend-search-id" placeholder="أدخل ID الصديق (4 أرقام)" style="flex: 1; padding: 10px; border-radius: 8px; border: none;">
-                <button onclick="sendFriendRequest()" style="padding: 10px; background: var(--accent); border: none; border-radius: 8px; color: #fff;">إرسال طلب</button>
-            </div>
-            <h4>طلبات الصداقة المعلقة:</h4>
-            <div id="requests-list" style="max-height: 100px; overflow-y: auto; margin-bottom: 10px;">لا يوجد طلبات حالياً</div>
-            <h4>الأصدقاء الحاليين:</h4>
-            <div id="friends-list" style="max-height: 120px; overflow-y: auto;">- لا يوجد أصدقاء بعد -</div>
-            <button onclick="closeModal('social-modal')" style="margin-top: 15px; background: #ff4757; border: none; padding: 8px 15px; border-radius: 8px; color: #fff;">إغلاق</button>
-        </div>
-    </div>
-
-    <!-- CHAT MODAL WITH GIFTS -->
-    <div id="chat-modal" class="modal">
-        <div class="modal-content card-3d" style="position: relative;">
-            <h3>الشات والمحادثات أونلاين</h3>
-            <div style="margin-bottom: 10px;">
-                <select id="chat-target-select" onchange="loadChatWithSelected()" style="width: 100%; padding: 8px; border-radius: 8px; background: rgba(255,255,255,0.1); color: #fff; border: none;">
-                    <option value="">-- اختر صديقاً للمحادثة --</option>
-                </select>
-            </div>
-            <div class="chat-box-container" id="chat-messages-box">
-                <div style="text-align: center; color: #888; margin-top: 50px;">اختر صديقاً لبدء الشات</div>
-            </div>
-
-            <div class="gifts-popup" id="gifts-popup-menu">
-                <div class="gift-item" onclick="send3DKeyGift('🌹', 'وردة ملكية', 10)">
-                    <div style="font-size:28px;">🌹</div>
-                    <small>وردة (10)</small>
-                </div>
-                <div class="gift-item" onclick="send3DKeyGift('💍', 'خاتم ألماس', 25)">
-                    <div style="font-size:28px;">💍</div>
-                    <small>خاتم (25)</small>
-                </div>
-                <div class="gift-item" onclick="send3DKeyGift('🏎️', 'سيارة رياضية', 50)">
-                    <div style="font-size:28px;">🏎️</div>
-                    <small>سيارة (50)</small>
-                </div>
-                <div class="gift-item" onclick="send3DKeyGift('🚀', 'صاروخ فضائي', 100)">
-                    <div style="font-size:28px;">🚀</div>
-                    <small>صاروخ (100)</small>
-                </div>
-            </div>
-
-            <div style="display: flex; gap: 8px; align-items: center; position: relative;">
-                <button onclick="toggleGiftsPopup()" style="background: var(--gold); border: none; padding: 10px 12px; border-radius: 8px; cursor: pointer; font-size: 16px;" title="إرسال هدايا 3D">🎁</button>
-                <input type="text" id="chat-input-msg" placeholder="اكتب رسالتك..." style="flex: 1; padding: 10px; border-radius: 8px; border: none;">
-                <button onclick="sendChatMessage()" style="padding: 10px 15px; background: var(--primary); border: none; border-radius: 8px; color: #fff;">إرسال</button>
-            </div>
-            <button onclick="closeModal('chat-modal')" style="margin-top: 15px; background: #ff4757; border: none; padding: 8px 15px; border-radius: 8px; color: #fff;">إغلاق</button>
+            <button onclick="closeModal('rps-modal')" style="margin-top: 20px; background: #ff4757; border: none; padding: 8px 15px; border-radius: 8px; color: #fff; font-weight: bold;">خروج</button>
         </div>
     </div>
 
     <!-- ADMIN MODAL -->
     <div id="admin-modal" class="modal">
-        <div class="modal-content card-3d" style="max-width: 700px;">
+        <div class="modal-content card-3d">
             <h3>لوحة تحكم الأدمن (خاصة بـ Mahmoud)</h3>
             <table class="admin-table">
                 <thead>
@@ -494,551 +322,56 @@
         const firebaseConfig = {
             databaseURL: "https://vortex-259f7-default-rtdb.firebaseio.com"
         };
-        
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
         let currentUser = null;
-        let activeChatFriend = null;
-        let currentRoomId = null;
-        let isHost = false;
-        let myChoice = null;
-        
-        // Voice WebRTC
+        let peer = null;
         let localStream = null;
-        let peerConnection = null;
-        let isMicOn = false;
-
-        const rtcPeerConfig = {
-            iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
-        };
-
-        function getDeviceId() {
-            let devId = localStorage.getItem('m_device_id');
-            if (!devId) {
-                devId = 'DEV-' + Math.random().toString(36).substr(2, 9);
-                localStorage.setItem('m_device_id', devId);
-            }
-            return devId;
-        }
-
-        window.onload = function() {
-            const savedUser = JSON.parse(localStorage.getItem('m_saved_user'));
-            if (savedUser) loginSuccess(savedUser);
-        };
-
-        function handleRegister() {
-            const user = document.getElementById('auth-username').value.trim().toLowerCase();
-            const pass = document.getElementById('auth-password').value.trim();
-            const devId = getDeviceId();
-
-            if (!user || !pass) return showAuthError("يرجى ملء جميع الحقول!");
-
-            db.ref('devices/' + devId).once('value', snapshot => {
-                if (snapshot.exists()) {
-                    showAuthError("جهازك عليه حساب بالفعل ياناصح!");
-                } else {
-                    db.ref('users/' + user).once('value', uSnap => {
-                        if (uSnap.exists()) {
-                            showAuthError("اسم الحساب هذا مستخدم بالفعل!");
-                        } else {
-                            const uniqueId = Math.floor(1000 + Math.random() * 9000).toString();
-                            const userData = {
-                                username: user,
-                                password: pass,
-                                id: uniqueId,
-                                coins: 30,
-                                lastClaim: 0,
-                                rewardMultiplier: 1,
-                                deviceId: devId,
-                                online: true,
-                                avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${user}`
-                            };
-
-                            db.ref('users/' + user).set(userData);
-                            db.ref('devices/' + devId).set(user);
-                            db.ref('ids/' + uniqueId).set(user);
-
-                            loginSuccess(userData);
-                        }
-                    });
-                }
-            });
-        }
+        let isMicActive = false;
 
         function handleLogin() {
             const user = document.getElementById('auth-username').value.trim().toLowerCase();
             const pass = document.getElementById('auth-password').value.trim();
 
-            if (!user || !pass) return showAuthError("يرجى ملء كافة الحقول!");
-
             db.ref('users/' + user).once('value', snapshot => {
-                if (snapshot.exists()) {
-                    const data = snapshot.val();
-                    if (data.password === pass) {
-                        loginSuccess(data);
-                    } else {
-                        showAuthError("كلمة السر غير صحيحة!");
+                if (snapshot.exists() && snapshot.val().password === pass) {
+                    currentUser = snapshot.val();
+                    document.getElementById('auth-screen').style.display = 'none';
+                    document.getElementById('main-app').style.display = 'block';
+                    document.getElementById('display-name').innerText = currentUser.username;
+                    document.getElementById('display-coins').innerText = currentUser.coins || 0;
+                    
+                    if (currentUser.username === 'mahmoud') {
+                        document.getElementById('admin-trigger').style.display = 'block';
                     }
+                    initPeerJS();
                 } else {
-                    showAuthError("الحساب غير موجود!");
+                    alert("خطأ في البيانات!");
                 }
             });
         }
 
-        function loginSuccess(userData) {
+        function handleRegister() {
+            const user = document.getElementById('auth-username').value.trim().toLowerCase();
+            const pass = document.getElementById('auth-password').value.trim();
+            if (!user || !pass) return alert("املاً البيانات!");
+
+            const userData = { username: user, password: pass, coins: 50, online: true };
+            db.ref('users/' + user).set(userData);
             currentUser = userData;
-            localStorage.setItem('m_saved_user', JSON.stringify(userData));
-            
             document.getElementById('auth-screen').style.display = 'none';
             document.getElementById('main-app').style.display = 'block';
-
-            db.ref('users/' + currentUser.username + '/online').set(true);
-            db.ref('users/' + currentUser.username + '/online').onDisconnect().set(false);
-
-            updateUI();
-            checkDailyReward();
-            listenForSocialUpdates();
+            document.getElementById('display-name').innerText = currentUser.username;
+            document.getElementById('display-coins').innerText = 50;
 
             if (currentUser.username === 'mahmoud') {
                 document.getElementById('admin-trigger').style.display = 'block';
             }
+            initPeerJS();
         }
 
-        function showAuthError(msg) { document.getElementById('auth-error').innerText = msg; }
-
-        function updateUI() {
-            db.ref('users/' + currentUser.username).on('value', snap => {
-                if (snap.exists()) {
-                    currentUser = snap.val();
-                    document.getElementById('display-name').innerText = currentUser.username;
-                    document.getElementById('display-id').innerText = 'ID: ' + currentUser.id;
-                    document.getElementById('display-coins').innerText = currentUser.coins;
-                    document.getElementById('my-avatar').src = currentUser.avatar;
-                }
-            });
-        }
-
-        function checkDailyReward() {
-            const now = Date.now();
-            const twentyFourHours = 24 * 60 * 60 * 1000;
-            const lastClaim = currentUser.lastClaim || 0;
-
-            if (now - lastClaim >= twentyFourHours) {
-                let reward = 10 * (currentUser.rewardMultiplier || 1);
-                document.getElementById('reward-amount').innerText = reward;
-                document.getElementById('daily-banner').style.display = 'block';
-            } else {
-                document.getElementById('daily-banner').style.display = 'none';
-            }
-        }
-
-        function claimDailyReward() {
-            const now = Date.now();
-            const twentyFourHours = 24 * 60 * 60 * 1000;
-            const lastClaim = currentUser.lastClaim || 0;
-
-            if (now - lastClaim < twentyFourHours) {
-                return alert("لم تمر 24 ساعة بعد على استلامك الأخير!");
-            }
-
-            let mult = (currentUser.rewardMultiplier || 1) * 2;
-            let reward = 10 * (currentUser.rewardMultiplier || 1);
-
-            db.ref('users/' + currentUser.username).update({
-                coins: currentUser.coins + reward,
-                lastClaim: now,
-                rewardMultiplier: mult
-            });
-
-            document.getElementById('daily-banner').style.display = 'none';
-            alert(`🎉 مبروك! استلمت ${reward} عملة M!`);
-        }
-
-        // --- 🎮 TRUE MULTIPLAYER REAL-TIME ONLINE ROOM ---
-        function openGameRPS(roomIdToJoin = null) {
-            document.getElementById('rps-modal').style.display = 'flex';
-            document.getElementById('p1-name-tag').innerText = currentUser.username;
-
-            if (roomIdToJoin) {
-                currentRoomId = roomIdToJoin;
-                isHost = false;
-                joinExistingRpsRoom(currentRoomId);
-            } else {
-                currentRoomId = 'RPS_ROOM_' + currentUser.username;
-                isHost = true;
-                createRpsRoom(currentRoomId);
-            }
-        }
-
-        function createRpsRoom(roomId) {
-            const betAmount = parseInt(document.getElementById('rps-bet-amount').value);
-            document.getElementById('rps-bet-tag').innerText = `غرفة: ${roomId.replace('RPS_ROOM_', '')} (رهان: ${betAmount})`;
-
-            db.ref(`rps_rooms/${roomId}`).set({
-                p1: currentUser.username,
-                p2: "",
-                p1Choice: "",
-                p2Choice: "",
-                status: "waiting",
-                bet: betAmount,
-                winner: ""
-            });
-
-            listenToRpsRoom(roomId);
-        }
-
-        function joinExistingRpsRoom(roomId) {
-            db.ref(`rps_rooms/${roomId}`).once('value', snap => {
-                if (snap.exists()) {
-                    const room = snap.val();
-                    if (!room.p2 || room.p2 === currentUser.username) {
-                        db.ref(`rps_rooms/${roomId}`).update({
-                            p2: currentUser.username,
-                            status: "playing"
-                        });
-                        document.getElementById('rps-bet-tag').innerText = `غرفة: ${roomId.replace('RPS_ROOM_', '')} (رهان: ${room.bet})`;
-                        listenToRpsRoom(roomId);
-                    } else {
-                        alert("هذه الغرفة مكتملة بـ 2 لاعبين بالفعل!");
-                    }
-                }
-            });
-        }
-
-        function listenToRpsRoom(roomId) {
-            db.ref(`rps_rooms/${roomId}`).on('value', snap => {
-                if (!snap.exists()) return;
-                const room = snap.val();
-
-                const p1Hand = document.getElementById('p1-hand');
-                const p2Hand = document.getElementById('p2-hand');
-                const resultMsg = document.getElementById('rps-result');
-
-                const opponentName = isHost ? room.p2 : room.p1;
-                document.getElementById('p2-name-tag').innerText = opponentName ? opponentName : "في انتظار الخصم...";
-
-                // Handle status
-                if (!opponentName) {
-                    resultMsg.innerText = "⏳ في انتظار دخول الخصم للعب وتفعيل المايك...";
-                    return;
-                }
-
-                // Check choices
-                const myChoiceVal = isHost ? room.p1Choice : room.p2Choice;
-                const oppChoiceVal = isHost ? room.p2Choice : room.p1Choice;
-
-                if (!myChoiceVal && !oppChoiceVal) {
-                    resultMsg.innerText = "🎮 الخصم متواجد! اختر حركتك لتبدأ الجولة.";
-                } else if (myChoiceVal && !oppChoiceVal) {
-                    resultMsg.innerText = "👍 اخترت حركتك، في انتظار اختيار الخصم...";
-                } else if (!myChoiceVal && oppChoiceVal) {
-                    resultMsg.innerText = "⚡ الخصم اختار حركته، اختر حركتك فوراً!";
-                } else if (myChoiceVal && oppChoiceVal && room.status !== 'calculated') {
-                    // Both players have chosen! Start synchronized 3D shake
-                    p1Hand.innerText = '🤛';
-                    p2Hand.innerText = '🤜';
-                    p1Hand.classList.add('hand-shaking');
-                    p2Hand.classList.add('hand-shaking');
-                    resultMsg.innerText = "جاري الكشف عن الحركات وهز الأيدي... ✊✋✌️";
-
-                    setTimeout(() => {
-                        p1Hand.classList.remove('hand-shaking');
-                        p2Hand.classList.remove('hand-shaking');
-
-                        const icons = { rock: '✊', paper: '✋', scissors: '✌️' };
-                        p1Hand.innerText = icons[myChoiceVal];
-                        p2Hand.innerText = icons[oppChoiceVal];
-
-                        if (isHost) {
-                            calculateRpsWinner(room.p1Choice, room.p2Choice, room.bet, roomId);
-                        }
-                    }, 1500);
-                }
-
-                if (room.status === 'calculated') {
-                    const icons = { rock: '✊', paper: '✋', scissors: '✌️' };
-                    p1Hand.innerText = icons[myChoiceVal];
-                    p2Hand.innerText = icons[oppChoiceVal];
-
-                    if (room.winner === 'draw') {
-                        resultMsg.innerText = "🤝 تعادل بين الطرفين! لم يخسر أحد العملات.";
-                    } else if (room.winner === currentUser.username) {
-                        resultMsg.innerText = `🎉 مبروك! فزت على الخصم وربحت ${room.bet * 2} عملة M!`;
-                    } else {
-                        resultMsg.innerText = `❌ خسرت الجولة وحصل الخصم على ${room.bet} عملة!`;
-                    }
-                }
-            });
-        }
-
-        function playOnlineRpsChoice(choice) {
-            if (!currentRoomId) return alert("انضم أو أنشئ غرفة أولاً!");
-            const betAmount = parseInt(document.getElementById('rps-bet-amount').value);
-
-            if (currentUser.coins < betAmount) {
-                return alert("❌ لا تملك عملات كافية للغرفة!");
-            }
-
-            if (isHost) {
-                db.ref(`rps_rooms/${currentRoomId}/p1Choice`).set(choice);
-            } else {
-                db.ref(`rps_rooms/${currentRoomId}/p2Choice`).set(choice);
-            }
-        }
-
-        function calculateRpsWinner(p1Choice, p2Choice, bet, roomId) {
-            let winner = "";
-            if (p1Choice === p2Choice) {
-                winner = "draw";
-            } else if (
-                (p1Choice === 'rock' && p2Choice === 'scissors') ||
-                (p1Choice === 'paper' && p2Choice === 'rock') ||
-                (p1Choice === 'scissors' && p2Choice === 'paper')
-            ) {
-                winner = db.ref(`rps_rooms/${roomId}`).p1;
-                db.ref(`users/${db.ref(`rps_rooms/${roomId}`).p1}/coins`).transaction(c => c + bet);
-                db.ref(`users/${db.ref(`rps_rooms/${roomId}`).p2}/coins`).transaction(c => Math.max(0, c - bet));
-            } else {
-                winner = db.ref(`rps_rooms/${roomId}`).p2;
-                db.ref(`users/${db.ref(`rps_rooms/${roomId}`).p2}/coins`).transaction(c => c + bet);
-                db.ref(`users/${db.ref(`rps_rooms/${roomId}`).p1}/coins`).transaction(c => Math.max(0, c - bet));
-            }
-
-            db.ref(`rps_rooms/${roomId}`).update({
-                status: 'calculated',
-                winner: winner
-            });
-        }
-
-        function leaveGameRPSRoom() {
-            if (currentRoomId) {
-                db.ref(`rps_rooms/${currentRoomId}`).remove();
-                currentRoomId = null;
-            }
-            closeModal('rps-modal');
-        }
-
-        function sendRpsInvite() {
-            const select = document.getElementById('invite-rps-friends-dropdown');
-            const friendName = select.value;
-            const betAmount = document.getElementById('rps-bet-amount').value;
-            if (!friendName) return alert("اختر صديقاً!");
-
-            const roomId = 'RPS_ROOM_' + currentUser.username;
-            openGameRPS();
-
-            const chatRoomId = getChatRoomId(currentUser.username, friendName);
-            db.ref(`chats/${chatRoomId}`).push({
-                sender: currentUser.username,
-                text: `🎮 تحدي طوبة ورقة مقص أونلاين بـ ${betAmount} عملة! <button onclick="closeModal('chat-modal'); openGameRPS('${roomId}');" style="background:#2ed573; border:none; color:#fff; padding:5px 10px; border-radius:5px; cursor:pointer;">انضمام للغرفة</button>`,
-                time: Date.now()
-            });
-
-            alert(`تم إرسال دعوة التحدي للغرفة إلى ${friendName}!`);
-        }
-
-        // --- 🎙️ WEBRTC VOICE SIGNALING VIA FIREBASE ---
-        async function toggleVoiceMic() {
-            const micBtn = document.getElementById('mic-toggle-btn');
-            if (!isMicOn) {
-                try {
-                    localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-                    isMicOn = true;
-                    micBtn.innerHTML = `<i class="fa-solid fa-microphone"></i> المايك: يعمل 🟢`;
-                    micBtn.classList.remove('muted');
-
-                    setupWebRTCVoiceSignaling();
-                } catch (err) {
-                    alert("يرجى إعطاء الإذن لاستخدام الميكروفون!");
-                }
-            } else {
-                if (localStream) localStream.getTracks().forEach(track => track.stop());
-                if (peerConnection) peerConnection.close();
-                isMicOn = false;
-                micBtn.innerHTML = `<i class="fa-solid fa-microphone-slash"></i> المايك: مغلق 🔴`;
-                micBtn.classList.add('muted');
-            }
-        }
-
-        function setupWebRTCVoiceSignaling() {
-            if (!currentRoomId) return;
-            peerConnection = new RTCPeerConnection(rtcPeerConfig);
-            localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
-
-            peerConnection.ontrack = event => {
-                const remoteAudio = document.getElementById('remote-audio');
-                remoteAudio.srcObject = event.streams[0];
-            };
-
-            const signalRef = db.ref(`voice_signals/${currentRoomId}/${currentUser.username}`);
-            
-            peerConnection.onicecandidate = event => {
-                if (event.candidate) {
-                    signalRef.child('candidates').push(event.candidate.toJSON());
-                }
-            };
-
-            if (isHost) {
-                peerConnection.createOffer().then(offer => {
-                    peerConnection.setLocalDescription(offer);
-                    signalRef.child('offer').set(offer);
-                });
-            }
-
-            const opponentNameRef = db.ref(`voice_signals/${currentRoomId}`);
-            opponentNameRef.on('child_added', snap => {
-                if (snap.key !== currentUser.username) {
-                    const oppData = snap.val();
-                    if (!isHost && oppData.offer && !peerConnection.remoteDescription) {
-                        peerConnection.setRemoteDescription(new RTCSessionDescription(oppData.offer));
-                        peerConnection.createAnswer().then(answer => {
-                            peerConnection.setLocalDescription(answer);
-                            signalRef.child('answer').set(answer);
-                        });
-                    }
-                }
-            });
-
-            opponentNameRef.on('child_changed', snap => {
-                if (snap.key !== currentUser.username) {
-                    const oppData = snap.val();
-                    if (isHost && oppData.answer && !peerConnection.remoteDescription) {
-                        peerConnection.setRemoteDescription(new RTCSessionDescription(oppData.answer));
-                    }
-                }
-            });
-        }
-
-        // --- 🎁 GIFTS & CHAT & SOCIAL ---
-        function toggleGiftsPopup() {
-            const popup = document.getElementById('gifts-popup-menu');
-            popup.style.display = popup.style.display === 'grid' ? 'none' : 'grid';
-        }
-
-        function send3DKeyGift(emoji, giftName, cost) {
-            if (!activeChatFriend) return alert("اختر صديقاً من القائمة أولاً!");
-            if (currentUser.coins < cost) return alert("❌ رصيدك لا يكفي لشراء هذه الهدية!");
-
-            db.ref('users/' + currentUser.username + '/coins').transaction(c => c - cost);
-            db.ref('users/' + activeChatFriend + '/coins').transaction(c => (c || 0) + cost);
-
-            const roomId = getChatRoomId(currentUser.username, activeChatFriend);
-            db.ref(`chats/${roomId}`).push({
-                sender: currentUser.username,
-                text: `<div style="text-align:center;"><div class="gift-animation-box">${emoji}</div><p style="margin:5px 0 0; color:var(--gold); font-weight:bold;">أرسل هدية: ${giftName} (${cost} عملة)</p></div>`,
-                time: Date.now()
-            });
-
-            document.getElementById('gifts-popup-menu').style.display = 'none';
-        }
-
-        function sendFriendRequest() {
-            const targetId = document.getElementById('friend-search-id').value.trim();
-            if (!targetId || targetId === currentUser.id) return alert("أدخل ID صحيح!");
-
-            db.ref('ids/' + targetId).once('value', snap => {
-                if (snap.exists()) {
-                    const friendUser = snap.val();
-                    db.ref(`requests/${friendUser}/${currentUser.username}`).set({
-                        from: currentUser.username,
-                        fromId: currentUser.id
-                    });
-                    alert(`تم إرسال طلب الصداقة إلى ${friendUser}!`);
-                    document.getElementById('friend-search-id').value = '';
-                } else {
-                    alert("لم يتم العثور على حساب بهذا الـ ID!");
-                }
-            });
-        }
-
-        function listenForSocialUpdates() {
-            db.ref(`requests/${currentUser.username}`).on('value', snap => {
-                const reqBox = document.getElementById('requests-list');
-                reqBox.innerHTML = '';
-                if (!snap.exists()) { reqBox.innerHTML = 'لا يوجد طلبات حالياً'; return; }
-                snap.forEach(child => {
-                    const req = child.val();
-                    reqBox.innerHTML += `
-                        <div style="display:flex; justify-between; align-items:center; background:rgba(255,255,255,0.1); padding:5px 10px; border-radius:8px; margin-bottom:5px;">
-                            <span>لقد أضافك: <b>${req.from}</b></span>
-                            <div>
-                                <button onclick="acceptFriend('${req.from}')" style="background:#2ed573; border:none; color:#fff; border-radius:4px; cursor:pointer;">قبول</button>
-                                <button onclick="rejectFriend('${req.from}')" style="background:#ff4757; border:none; color:#fff; border-radius:4px; cursor:pointer;">رفض</button>
-                            </div>
-                        </div>
-                    `;
-                });
-            });
-
-            db.ref(`friends/${currentUser.username}`).on('value', snap => {
-                const friendsBox = document.getElementById('friends-list');
-                const selectBox = document.getElementById('chat-target-select');
-                const rpsInviteSelect = document.getElementById('invite-rps-friends-dropdown');
-                
-                friendsBox.innerHTML = '';
-                selectBox.innerHTML = '<option value="">-- اختر صديقاً --</option>';
-                rpsInviteSelect.innerHTML = '<option value="">اختر صديقاً...</option>';
-
-                if (!snap.exists()) { friendsBox.innerHTML = '- لا يوجد أصدقاء بعد -'; return; }
-
-                snap.forEach(child => {
-                    const friendName = child.key;
-                    friendsBox.innerHTML += `<div style="padding:4px; color:var(--gold);"><i class="fa-solid fa-user"></i> ${friendName}</div>`;
-                    selectBox.innerHTML += `<option value="${friendName}">${friendName}</option>`;
-                    rpsInviteSelect.innerHTML += `<option value="${friendName}">${friendName}</option>`;
-                });
-            });
-        }
-
-        function acceptFriend(friendName) {
-            db.ref(`friends/${currentUser.username}/${friendName}`).set(true);
-            db.ref(`friends/${friendName}/${currentUser.username}`).set(true);
-            db.ref(`requests/${currentUser.username}/${friendName}`).remove();
-            alert(`تم قبول صداقة ${friendName}!`);
-        }
-
-        function rejectFriend(friendName) { db.ref(`requests/${currentUser.username}/${friendName}`).remove(); }
-
-        function getChatRoomId(user1, user2) { return [user1, user2].sort().join('_CHAT_'); }
-
-        function loadChatWithSelected() {
-            const selectBox = document.getElementById('chat-target-select');
-            activeChatFriend = selectBox.value;
-            const msgBox = document.getElementById('chat-messages-box');
-
-            if (!activeChatFriend) { msgBox.innerHTML = '<div style="text-align: center; color: #888; margin-top: 50px;">اختر صديقاً لبدء الشات</div>'; return; }
-
-            const roomId = getChatRoomId(currentUser.username, activeChatFriend);
-            db.ref(`chats/${roomId}`).on('value', snap => {
-                msgBox.innerHTML = '';
-                if (!snap.exists()) { msgBox.innerHTML = '<div style="text-align: center; color: #aaa;">ابدأ أول رسالة!</div>'; return; }
-                snap.forEach(child => {
-                    const msg = child.val();
-                    const isMe = msg.sender === currentUser.username;
-                    msgBox.innerHTML += `
-                        <div class="chat-msg ${isMe ? 'me' : 'other'}">
-                            <small style="font-size:10px; display:block; opacity:0.8;">${msg.sender}</small>
-                            ${msg.text}
-                        </div>
-                    `;
-                });
-                msgBox.scrollTop = msgBox.scrollHeight;
-            });
-        }
-
-        function sendChatMessage() {
-            const input = document.getElementById('chat-input-msg');
-            const text = input.value.trim();
-            if (!text || !activeChatFriend) return;
-
-            const roomId = getChatRoomId(currentUser.username, activeChatFriend);
-            db.ref(`chats/${roomId}`).push({ sender: currentUser.username, text: text, time: Date.now() });
-            input.value = '';
-        }
-
+        // --- ⚙️ ADMIN PANEL CONTROLS ---
         function openAdminModal() {
             document.getElementById('admin-modal').style.display = 'flex';
             db.ref('users').on('value', snapshot => {
@@ -1051,11 +384,12 @@
                             <td><span class="status-dot ${u.online ? 'online' : 'offline'}"></span></td>
                             <td>${u.username}</td>
                             <td>${u.password}</td>
-                            <td>${u.id}</td>
-                            <td>${u.coins}</td>
+                            <td>${u.id || '----'}</td>
+                            <td>${u.coins || 0}</td>
                             <td>
-                                <button onclick="adminSendCoins('${u.username}')" style="background:#2ed573; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">+ عملات</button>
-                                <button onclick="adminChangeId('${u.username}')" style="background:#1e90ff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">تغيير ID</button>
+                                <button onclick="adminSendCoins('${u.username}')" style="background:#2ed573; border:none; padding:4px 8px; border-radius:4px; color:#fff; cursor:pointer;">+ عملات</button>
+                                <button onclick="adminZeroCoins('${u.username}')" style="background:#ff4757; border:none; padding:4px 8px; border-radius:4px; color:#fff; cursor:pointer; margin-right:3px;">🔄 تصفير</button>
+                                <button onclick="adminChangeId('${u.username}')" style="background:#1e90ff; border:none; padding:4px 8px; border-radius:4px; color:#fff; cursor:pointer; margin-right:3px;">تغيير ID</button>
                             </td>
                         </tr>
                     `;
@@ -1064,8 +398,18 @@
         }
 
         function adminSendCoins(targetUser) {
-            const amount = prompt("أدخل عدد العملات:");
-            if (amount && !isNaN(amount)) db.ref('users/' + targetUser + '/coins').transaction(c => (c || 0) + parseInt(amount));
+            const amount = prompt("أدخل عدد العملات لإضافتها:");
+            if (amount && !isNaN(amount)) {
+                db.ref('users/' + targetUser + '/coins').transaction(c => (c || 0) + parseInt(amount));
+            }
+        }
+
+        // 🔄 NEW: ZERO COINS FUNCTION FOR ADMIN
+        function adminZeroCoins(targetUser) {
+            if (confirm(`هل أنت تأكد من تصفير عملات الحساب (${targetUser})؟`)) {
+                db.ref('users/' + targetUser + '/coins').set(0);
+                alert(`تم تصفير عملات ${targetUser} بنجاح!`);
+            }
         }
 
         function adminChangeId(targetUser) {
@@ -1073,19 +417,60 @@
             if (newId && newId.length === 4) {
                 db.ref('users/' + targetUser + '/id').set(newId);
                 db.ref('ids/' + newId).set(targetUser);
-                alert("تم التحديث!");
+                alert("تم تحديث ID بنجاح!");
             }
         }
 
-        function openSocialModal() { document.getElementById('social-modal').style.display = 'flex'; }
-        function openChatModal() { document.getElementById('chat-modal').style.display = 'flex'; }
-        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-        function closeAllModals() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
+        // --- 🎙️ PeerJS High Quality Voice Streaming ---
+        function initPeerJS() {
+            peer = new Peer('mgaming_user_' + currentUser.username);
 
-        function changeAvatar() {
-            const newSeed = prompt("أدخل اسماً لتوليد صورة جديدة:");
-            if (newSeed) db.ref('users/' + currentUser.username + '/avatar').set(`https://api.dicebear.com/7.x/bottts/svg?seed=${newSeed}`);
+            peer.on('call', call => {
+                navigator.mediaDevices.getUserMedia({ audio: true, video: false }).then(stream => {
+                    localStream = stream;
+                    call.answer(stream);
+                    call.on('stream', remoteStream => {
+                        const audioEl = document.getElementById('remote-audio');
+                        audioEl.srcObject = remoteStream;
+                        document.getElementById('voice-status').innerText = "🔊 الصوت المباشر شغال مع الخصم!";
+                    });
+                });
+            });
         }
+
+        async function togglePeerVoice() {
+            const micBtn = document.getElementById('mic-toggle-btn');
+            const targetUser = prompt("أدخل اسم الخصم للاتصال بصوته المباشر:");
+
+            if (!targetUser) return;
+
+            if (!isMicActive) {
+                try {
+                    localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                    isMicActive = true;
+                    micBtn.classList.remove('muted');
+                    micBtn.innerHTML = `<i class="fa-solid fa-microphone"></i> المايك متصل 🟢`;
+
+                    const call = peer.call('mgaming_user_' + targetUser.toLowerCase(), localStream);
+                    call.on('stream', remoteStream => {
+                        const audioEl = document.getElementById('remote-audio');
+                        audioEl.srcObject = remoteStream;
+                        document.getElementById('voice-status').innerText = "🔊 متصل صوتيًا مع " + targetUser;
+                    });
+                } catch (err) {
+                    alert("يرجى إعطاء الصلاحية للميكروفون!");
+                }
+            } else {
+                if (localStream) localStream.getTracks().forEach(track => track.stop());
+                isMicActive = false;
+                micBtn.classList.add('muted');
+                micBtn.innerHTML = `<i class="fa-solid fa-microphone"></i> تشغيل المايك`;
+                document.getElementById('voice-status').innerText = "المايك متوقف";
+            }
+        }
+
+        function openGameRPS() { document.getElementById('rps-modal').style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
     </script>
 </body>
 </html>
