@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>M-Gaming World</title>
+    <title>M-Gaming World - Ludo Pro</title>
     <!-- FontAwesome & Google Fonts -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
@@ -18,6 +18,10 @@
             --accent: #ff007f;
             --gold: #ffd700;
             --bg-dark: #0f0c20;
+            --ludo-red: #c23616;
+            --ludo-green: #44bd32;
+            --ludo-yellow: #e1b12c;
+            --ludo-blue: #0097e6;
         }
 
         * {
@@ -65,8 +69,6 @@
             border: 1px solid rgba(255, 255, 255, 0.18);
             border-radius: 20px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-            transform-style: preserve-3d;
-            transition: all 0.3s ease;
         }
 
         /* Auth Container */
@@ -75,18 +77,12 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            perspective: 1000px;
         }
 
         .auth-box {
             width: 380px;
             padding: 30px;
             text-align: center;
-            transform: rotateX(5deg) rotateY(-5deg);
-        }
-
-        .auth-box:hover {
-            transform: rotateX(0deg) rotateY(0deg);
         }
 
         .auth-box input {
@@ -142,7 +138,6 @@
             cursor: pointer;
         }
 
-        /* Games Container */
         .games-section {
             padding: 20px;
             display: grid;
@@ -156,45 +151,96 @@
             cursor: pointer;
         }
 
-        /* Rock Paper Scissors Game */
-        .rps-hands {
+        /* 🎲 GIANT WOODEN LUDO BOARD (15x15) - STYLE JAWAKER */
+        .giant-ludo-container {
+            width: 100%;
+            max-width: 480px;
+            aspect-ratio: 1 / 1;
+            margin: 15px auto;
+            background: #d1b187;
+            border: 8px solid #5a3d28;
+            border-radius: 16px;
+            display: grid;
+            grid-template-columns: repeat(15, 1fr);
+            grid-template-rows: repeat(15, 1fr);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 0 25px rgba(0,0,0,0.4);
+            position: relative;
+        }
+
+        /* Wooden Bases */
+        .ludo-base {
+            border: 3px solid #5a3d28;
             display: flex;
-            justify-content: space-around;
-            font-size: 70px;
-            margin: 20px 0;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.3);
         }
+        .base-red { grid-column: 1 / 7; grid-row: 1 / 7; background: var(--ludo-red); }
+        .base-green { grid-column: 10 / 16; grid-row: 1 / 7; background: var(--ludo-green); }
+        .base-yellow { grid-column: 10 / 16; grid-row: 10 / 16; background: var(--ludo-yellow); }
+        .base-blue { grid-column: 1 / 7; grid-row: 10 / 16; background: var(--ludo-blue); }
 
-        .hand-anim {
-            animation: shakeHand 0.5s infinite alternate;
-        }
-
-        @keyframes shakeHand {
-            0% { transform: translateY(0) rotate(0deg); }
-            100% { transform: translateY(-15px) rotate(10deg); }
-        }
-
-        /* Ludo Board 3D Interactive UI */
-        .ludo-board-preview {
-            width: 220px;
-            height: 220px;
-            margin: 10px auto;
+        .base-inner {
+            width: 82%;
+            height: 82%;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 12px;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 5px;
-            transform: rotateX(20deg);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-            background: #fff;
-            padding: 5px;
-            border-radius: 15px;
+            gap: 12px;
+            padding: 12px;
+            align-items: center;
+            justify-items: center;
+            box-shadow: inset 0 4px 8px rgba(0,0,0,0.2);
         }
 
-        .ludo-zone { border-radius: 10px; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 14px; }
-        .red { background: #ff4757; color: #fff; }
-        .green { background: #2ed573; color: #fff; }
-        .yellow { background: #ffa502; color: #fff; }
-        .blue { background: #1e90ff; color: #fff; }
+        .pawn-spot {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            border: 2px solid #333;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        .spot-red { background: var(--ludo-red); }
+        .spot-green { background: var(--ludo-green); }
+        .spot-yellow { background: var(--ludo-yellow); }
+        .spot-blue { background: var(--ludo-blue); }
 
-        /* Bottom Nav & Chat */
+        /* Center Home Triangle */
+        .ludo-center {
+            grid-column: 7 / 10;
+            grid-row: 7 / 10;
+            background: conic-gradient(
+                var(--ludo-red) 0deg 90deg,
+                var(--ludo-green) 90deg 180deg,
+                var(--ludo-yellow) 180deg 270deg,
+                var(--ludo-blue) 270deg 360deg
+            );
+            border: 3px solid #5a3d28;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 900;
+            font-size: 14px;
+            text-shadow: 0 2px 4px #000;
+        }
+
+        /* Cells */
+        .ludo-cell {
+            border: 0.5px solid rgba(0,0,0,0.15);
+            background: #fffdf5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .cell-red-path { background: var(--ludo-red) !important; }
+        .cell-green-path { background: var(--ludo-green) !important; }
+        .cell-yellow-path { background: var(--ludo-yellow) !important; }
+        .cell-blue-path { background: var(--ludo-blue) !important; }
+
+        /* Bottom Nav & Modals */
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -206,15 +252,9 @@
             border-top: 1px solid rgba(255,255,255,0.1);
         }
 
-        .nav-item {
-            color: #aaa;
-            font-size: 20px;
-            cursor: pointer;
-        }
-
+        .nav-item { color: #aaa; font-size: 20px; cursor: pointer; }
         .nav-item.active { color: var(--accent); }
 
-        /* Modal Screens */
         .modal {
             display: none;
             position: fixed;
@@ -226,12 +266,13 @@
         }
 
         .modal-content {
-            width: 90%;
-            max-width: 500px;
+            width: 95%;
+            max-width: 650px;
             padding: 25px;
+            max-height: 95vh;
+            overflow-y: auto;
         }
 
-        /* Chat Box Styles */
         .chat-box-container {
             height: 250px;
             overflow-y: auto;
@@ -250,81 +291,47 @@
             border-radius: 12px;
             font-size: 14px;
         }
+        .chat-msg.me { align-self: flex-end; background: var(--primary); color: #fff; }
+        .chat-msg.other { align-self: flex-start; background: rgba(255,255,255,0.15); color: #fff; }
 
-        .chat-msg.me {
-            align-self: flex-end;
-            background: var(--primary);
-            color: #fff;
-        }
-
-        .chat-msg.other {
-            align-self: flex-start;
-            background: rgba(255,255,255,0.15);
-            color: #fff;
-        }
-
-        /* Voice Mic Controls */
         .mic-btn {
             background: #2ed573;
             color: #fff;
             border: none;
-            padding: 10px 20px;
+            padding: 8px 15px;
             border-radius: 20px;
             font-weight: bold;
             cursor: pointer;
-            margin: 10px 0;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-        }
-
-        .mic-btn.muted {
-            background: #ff4757;
-        }
-
-        /* Admin Dashboard */
-        .admin-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-        }
-
-        .admin-table th, .admin-table td {
-            padding: 10px;
-            border: 1px solid rgba(255,255,255,0.1);
-            text-align: center;
+            gap: 6px;
             font-size: 13px;
         }
+        .mic-btn.muted { background: #ff4757; }
 
-        .status-dot {
-            height: 10px; width: 10px;
-            border-radius: 50%;
-            display: inline-block;
-        }
-        .online { background: #2ed573; }
-        .offline { background: #ff4757; }
-
-        /* Dice Rolling */
         .dice-btn {
             font-size: 40px;
             cursor: pointer;
-            background: rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.15);
             border: 2px solid var(--gold);
-            border-radius: 15px;
-            padding: 10px 25px;
+            border-radius: 18px;
+            padding: 10px 30px;
             display: inline-block;
-            margin: 15px 0;
+            margin: 10px 0;
             transition: transform 0.2s;
         }
+        .dice-btn:active { transform: scale(0.9) rotate(15deg); }
 
-        .dice-btn:active {
-            transform: scale(0.9) rotate(20deg);
-        }
+        .admin-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .admin-table th, .admin-table td { padding: 10px; border: 1px solid rgba(255,255,255,0.1); text-align: center; font-size: 13px; }
+        .status-dot { height: 10px; width: 10px; border-radius: 50%; display: inline-block; }
+        .online { background: #2ed573; }
+        .offline { background: #ff4757; }
     </style>
 </head>
 <body>
 
-    <!-- 1. AUTH SCREEN -->
+    <!-- AUTH SCREEN -->
     <div id="auth-screen">
         <div class="auth-box card-3d">
             <h2 style="color: var(--gold);"><i class="fa-solid fa-gamepad"></i> مرحباً بك!</h2>
@@ -337,7 +344,7 @@
         </div>
     </div>
 
-    <!-- 2. MAIN APP -->
+    <!-- MAIN APP -->
     <div id="main-app">
         <div class="navbar card-3d">
             <div class="user-profile-header">
@@ -354,47 +361,33 @@
             </div>
         </div>
 
-        <!-- Daily Reward Banner -->
         <div id="daily-banner" style="margin: 15px; padding: 15px; text-align: center; background: linear-gradient(45deg, #2ed573, #1e90ff); border-radius: 15px; display: none;">
             <span>🎁 مكافأة اليوم جاهزة! الحصول على <b id="reward-amount">10</b> عملات</span>
             <button onclick="claimDailyReward()" style="margin-right: 15px; padding: 5px 15px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer;">استلام</button>
         </div>
 
-        <!-- Admin Button (Shows for 'mahmoud' only) -->
         <div id="admin-trigger" style="display: none; padding: 0 20px; margin-top: 10px;">
             <button onclick="openAdminModal()" style="width: 100%; padding: 10px; background: #ff9f43; border: none; border-radius: 10px; font-weight: bold; color: #000; cursor: pointer;">
                 <i class="fa-solid fa-user-shield"></i> فتح لوحة التحكم الأدمن
             </button>
         </div>
 
-        <!-- Games Section -->
         <h3 style="padding: 0 20px; margin-top: 20px;"><i class="fa-solid fa-trophy"></i> الألعاب المتاحة</h3>
         <div class="games-section">
-            
-            <!-- Rock Paper Scissors Card -->
             <div class="game-card card-3d" onclick="openGameRPS()">
                 <h3>طوبة ورقة مقص 3D</h3>
-                <div class="rps-hands">
-                    <span>✊</span>
-                    <span>✌️</span>
-                </div>
-                <p>العب ضد الذكاء الاصطناعي واكسب عملات M!</p>
+                <div style="font-size: 50px; margin: 10px 0;">✊ ✌️</div>
+                <p>العب واكسب عملات M!</p>
             </div>
 
-            <!-- Ludo Game Card -->
+            <!-- Giant Ludo Card -->
             <div class="game-card card-3d" onclick="openLudoMenu()">
-                <h3>لعبة لودو Ludo 3D أونلاين</h3>
-                <div class="ludo-board-preview">
-                    <div class="ludo-zone red">أحمر</div>
-                    <div class="ludo-zone green">أخضر</div>
-                    <div class="ludo-zone blue">أزرق</div>
-                    <div class="ludo-zone yellow">أصفر</div>
-                </div>
-                <p>غرف خاصة، دعوة الأصدقاء وميزة الشات الصوتي المباشر! 🎙️</p>
+                <h3>لعبة لودو الأصلية (كبير وفخم) 🎲</h3>
+                <div style="font-size: 40px; margin: 10px 0;">🔴 🟢 🟡 🔵</div>
+                <p>طاولة لودو خشبية ضخمة + غرف خاصة + مايك صوتي 🎙️!</p>
             </div>
         </div>
 
-        <!-- Bottom Navigation Bar -->
         <div class="bottom-nav">
             <div class="nav-item active" onclick="closeAllModals()"><i class="fa-solid fa-house"></i></div>
             <div class="nav-item" onclick="openSocialModal()"><i class="fa-solid fa-user-group"></i></div>
@@ -402,14 +395,11 @@
         </div>
     </div>
 
-    <!-- 3. RPS GAME MODAL -->
+    <!-- RPS MODAL -->
     <div id="rps-modal" class="modal">
         <div class="modal-content card-3d" style="text-align: center;">
             <h3>طوبة ورقة مقص 3D</h3>
-            <div class="rps-hands">
-                <div id="p1-hand" class="hand-anim">🤛</div>
-                <div id="p2-hand" class="hand-anim">🤜</div>
-            </div>
+            <div style="font-size: 60px; margin: 15px 0;" id="rps-hands">🤛 🤜</div>
             <div id="rps-result" style="font-weight: bold; margin: 15px 0;">اختر حركتك:</div>
             <div style="display: flex; justify-content: space-around;">
                 <button onclick="playRPS('rock')" style="padding: 10px 15px; border-radius: 10px;">✊ طوبة</button>
@@ -420,51 +410,77 @@
         </div>
     </div>
 
-    <!-- 4. LUDO GAME MODAL WITH PRIVATE ROOM & VOICE MIC -->
+    <!-- GIANT LUDO BOARD MODAL -->
     <div id="ludo-modal" class="modal">
         <div class="modal-content card-3d" style="text-align: center;">
-            <h3>🎲 غرفة اللودو 3D أونلاين</h3>
+            <h3 style="color: var(--gold); margin-top: 0;">🎲 طاولة اللودو الملكية الضخمة</h3>
             
             <div id="ludo-select-mode">
-                <p>اختر طريقة اللعب:</p>
-                <button onclick="createPrivateLudoRoom()" style="padding: 12px 20px; margin: 8px; border-radius: 10px; background: var(--accent); border: none; color: #fff; font-weight: bold;">🔒 إنشاء غرفة خاصة ودعوة صديق</button>
-                <button onclick="startLudoGame('global_ludo_room')" style="padding: 12px 20px; margin: 8px; border-radius: 10px; background: var(--primary); border: none; color: #fff; font-weight: bold;">🌐 دخول الغرفة العامة</button>
+                <p>اختر نوع الغرفة:</p>
+                <button onclick="createPrivateLudoRoom()" style="padding: 12px 25px; margin: 8px; border-radius: 10px; background: var(--accent); border: none; color: #fff; font-weight: bold; font-size: 15px;">🔒 إنشاء غرفة خاصة ودعوة صديق</button>
+                <button onclick="startLudoGame('global_ludo_room')" style="padding: 12px 25px; margin: 8px; border-radius: 10px; background: var(--primary); border: none; color: #fff; font-weight: bold; font-size: 15px;">🌐 الغرفة العامة</button>
             </div>
 
             <div id="ludo-board-area" style="display: none;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <span id="ludo-room-code" style="color: var(--gold); font-size: 13px;">كود الغرفة: ----</span>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <span id="ludo-room-code" style="color: var(--gold); font-size: 14px; font-weight: bold;">غرفة: ----</span>
                     <button class="mic-btn" id="mic-toggle-btn" onclick="toggleVoiceMic()"><i class="fa-solid fa-microphone"></i> المايك: مغلق</button>
                 </div>
 
-                <!-- Invite Friend Box inside Room -->
-                <div id="invite-friend-box" style="margin-bottom: 10px; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 10px;">
-                    <label style="font-size: 12px;">دعوة صديق للغرفة:</label>
-                    <select id="invite-friends-dropdown" style="padding: 5px; border-radius: 5px; background: rgba(255,255,255,0.1); color: #fff; border: none;">
-                        <option value="">اختر صديقاً...</option>
+                <div id="invite-friend-box" style="margin-bottom: 10px; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 10px;">
+                    <select id="invite-friends-dropdown" style="padding: 6px; border-radius: 6px; background: rgba(255,255,255,0.15); color: #fff; border: none;">
+                        <option value="">اختر صديقاً لدعوته...</option>
                     </select>
-                    <button onclick="sendRoomInvite()" style="padding: 5px 10px; background: var(--accent); border: none; border-radius: 5px; color: #fff; font-weight: bold;">إرسال دعوة</button>
+                    <button onclick="sendRoomInvite()" style="padding: 6px 12px; background: var(--accent); border: none; border-radius: 6px; color: #fff; font-weight: bold;">إرسال دعوة</button>
                 </div>
 
-                <!-- Ludo Interactive Board -->
-                <div class="ludo-board-preview" style="width: 250px; height: 250px;">
-                    <div id="zone-red" class="ludo-zone red">🔴 <span id="pos-red">0</span></div>
-                    <div id="zone-green" class="ludo-zone green">🟢 <span id="pos-green">0</span></div>
-                    <div id="zone-blue" class="ludo-zone blue">🔵 <span id="pos-blue">0</span></div>
-                    <div id="zone-yellow" class="ludo-zone yellow">🟡 <span id="pos-yellow">0</span></div>
+                <!-- GIANT 15x15 LUDO BOARD -->
+                <div class="giant-ludo-container" id="giant-ludo-grid">
+                    <div class="ludo-base base-red">
+                        <div class="base-inner">
+                            <div class="pawn-spot spot-red"></div>
+                            <div class="pawn-spot spot-red"></div>
+                            <div class="pawn-spot spot-red"></div>
+                            <div class="pawn-spot spot-red"></div>
+                        </div>
+                    </div>
+                    <div class="ludo-base base-green">
+                        <div class="base-inner">
+                            <div class="pawn-spot spot-green"></div>
+                            <div class="pawn-spot spot-green"></div>
+                            <div class="pawn-spot spot-green"></div>
+                            <div class="pawn-spot spot-green"></div>
+                        </div>
+                    </div>
+                    <div class="ludo-base base-yellow">
+                        <div class="base-inner">
+                            <div class="pawn-spot spot-yellow"></div>
+                            <div class="pawn-spot spot-yellow"></div>
+                            <div class="pawn-spot spot-yellow"></div>
+                            <div class="pawn-spot spot-yellow"></div>
+                        </div>
+                    </div>
+                    <div class="ludo-base base-blue">
+                        <div class="base-inner">
+                            <div class="pawn-spot spot-blue"></div>
+                            <div class="pawn-spot spot-blue"></div>
+                            <div class="pawn-spot spot-blue"></div>
+                            <div class="pawn-spot spot-blue"></div>
+                        </div>
+                    </div>
+                    <div class="ludo-center">HOME</div>
                 </div>
 
-                <!-- Dice Rolling Area -->
+                <!-- Dice Area -->
                 <div class="dice-btn" id="ludo-dice-display" onclick="rollLudoDice()">🎲 <span>رمي النرد</span></div>
-                
                 <p id="ludo-status-msg" style="font-size: 13px; color: #ccc;">اضغط على النرد للعب دورك!</p>
             </div>
 
-            <button onclick="closeModal('ludo-modal')" style="margin-top: 20px; background: #ff4757; border: none; padding: 8px 15px; border-radius: 8px; color: #fff;">إغلاق الغرفة</button>
+            <button onclick="closeModal('ludo-modal')" style="margin-top: 12px; background: #ff4757; border: none; padding: 8px 18px; border-radius: 8px; color: #fff; font-weight: bold;">إغلاق الغرفة</button>
         </div>
     </div>
 
-    <!-- 5. SOCIAL & FRIENDS MODAL -->
+    <!-- SOCIAL MODAL -->
     <div id="social-modal" class="modal">
         <div class="modal-content card-3d">
             <h3>إضافة صديق</h3>
@@ -480,18 +496,17 @@
         </div>
     </div>
 
-    <!-- 6. CHAT MODAL -->
+    <!-- CHAT MODAL -->
     <div id="chat-modal" class="modal">
         <div class="modal-content card-3d">
-            <h3 id="chat-header-title">الشات والمحادثات</h3>
-            <div id="chat-friends-select" style="margin-bottom: 10px;">
-                <label style="font-size: 12px;">اختر صديق للمحادثة:</label>
+            <h3>الشات والمحادثات</h3>
+            <div style="margin-bottom: 10px;">
                 <select id="chat-target-select" onchange="loadChatWithSelected()" style="width: 100%; padding: 8px; border-radius: 8px; background: rgba(255,255,255,0.1); color: #fff; border: none;">
                     <option value="">-- اختر صديقاً --</option>
                 </select>
             </div>
             <div class="chat-box-container" id="chat-messages-box">
-                <div style="text-align: center; color: #888; margin-top: 50px;">اختر صديقاً من القائمة لبدء المحادثة</div>
+                <div style="text-align: center; color: #888; margin-top: 50px;">اختر صديقاً لبدء الشات</div>
             </div>
             <div style="display: flex; gap: 8px;">
                 <input type="text" id="chat-input-msg" placeholder="اكتب رسالتك..." style="flex: 1; padding: 10px; border-radius: 8px; border: none;">
@@ -501,9 +516,9 @@
         </div>
     </div>
 
-    <!-- 7. ADMIN DASHBOARD MODAL -->
+    <!-- ADMIN MODAL -->
     <div id="admin-modal" class="modal">
-        <div class="modal-content card-3d" style="max-width: 700px; overflow-x: auto;">
+        <div class="modal-content card-3d" style="max-width: 700px;">
             <h3>لوحة تحكم الأدمن (خاصة بـ Mahmoud)</h3>
             <table class="admin-table">
                 <thead>
@@ -516,28 +531,22 @@
                         <th>إجراءات التحكم</th>
                     </tr>
                 </thead>
-                <tbody id="admin-users-list">
-                    <!-- Populated via Firebase -->
-                </tbody>
+                <tbody id="admin-users-list"></tbody>
             </table>
             <button onclick="closeModal('admin-modal')" style="margin-top: 20px; background: #ff4757; border: none; padding: 8px 15px; border-radius: 8px; color: #fff;">إغلاق</button>
         </div>
     </div>
 
-    <!-- JAVASCRIPT & LOGIC -->
     <script>
-        // --- 1. FIREBASE CONFIGURATION ---
         const firebaseConfig = {
             databaseURL: "https://vortex-259f7-default-rtdb.firebaseio.com"
         };
         
-        // Initialize Firebase
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
         }
         const db = firebase.database();
 
-        // --- 2. GLOBAL VARIABLES ---
         let currentUser = null;
         let activeChatFriend = null;
         let currentLudoRoom = 'global_ludo_room';
@@ -553,15 +562,35 @@
             return devId;
         }
 
-        // --- 3. AUTO LOGIN CHECK ---
-        window.onload = function() {
-            const savedUser = JSON.parse(localStorage.getItem('m_saved_user'));
-            if (savedUser) {
-                loginSuccess(savedUser);
+        // Generate 15x15 Giant Board Cells
+        function generateGiantLudoBoard() {
+            const board = document.getElementById('giant-ludo-grid');
+            for (let r = 1; r <= 15; r++) {
+                for (let c = 1; c <= 15; c++) {
+                    if ((r <= 6 && c <= 6) || (r <= 6 && c >= 10) || (r >= 10 && c <= 6) || (r >= 10 && c >= 10) || (r >= 7 && r <= 9 && c >= 7 && c <= 9)) {
+                        continue;
+                    }
+                    const cell = document.createElement('div');
+                    cell.className = 'ludo-cell';
+                    cell.style.gridRow = r;
+                    cell.style.gridColumn = c;
+
+                    if (r === 8 && c >= 2 && c <= 6) cell.classList.add('cell-red-path');
+                    if (c === 8 && r >= 2 && r <= 6) cell.classList.add('cell-green-path');
+                    if (r === 8 && c >= 10 && c <= 14) cell.classList.add('cell-yellow-path');
+                    if (c === 8 && r >= 10 && r >= 10 && r <= 14) cell.classList.add('cell-blue-path');
+
+                    board.appendChild(cell);
+                }
             }
+        }
+
+        window.onload = function() {
+            generateGiantLudoBoard();
+            const savedUser = JSON.parse(localStorage.getItem('m_saved_user'));
+            if (savedUser) loginSuccess(savedUser);
         };
 
-        // --- 4. AUTHENTICATION LOGIC ---
         function handleRegister() {
             const user = document.getElementById('auth-username').value.trim().toLowerCase();
             const pass = document.getElementById('auth-password').value.trim();
@@ -640,9 +669,7 @@
             }
         }
 
-        function showAuthError(msg) {
-            document.getElementById('auth-error').innerText = msg;
-        }
+        function showAuthError(msg) { document.getElementById('auth-error').innerText = msg; }
 
         function updateUI() {
             db.ref('users/' + currentUser.username).on('value', snap => {
@@ -656,12 +683,10 @@
             });
         }
 
-        // --- 5. DAILY REWARD SYSTEM ---
         function checkDailyReward() {
             const now = Date.now();
             const oneDay = 24 * 60 * 60 * 1000;
             const lastClaim = currentUser.lastClaim || 0;
-
             if (now - lastClaim >= oneDay) {
                 let reward = 10 * (currentUser.rewardMultiplier || 1);
                 document.getElementById('reward-amount').innerText = reward;
@@ -672,18 +697,15 @@
         function claimDailyReward() {
             let mult = (currentUser.rewardMultiplier || 1) * 2;
             let reward = 10 * (currentUser.rewardMultiplier || 1);
-
             db.ref('users/' + currentUser.username).update({
                 coins: currentUser.coins + reward,
                 lastClaim: Date.now(),
                 rewardMultiplier: mult
             });
-
             document.getElementById('daily-banner').style.display = 'none';
-            alert(`🎉 مبروك! استلمت ${reward} عملة صفراء M!`);
+            alert(`🎉 مبروك! استلمت ${reward} عملة M!`);
         }
 
-        // --- 6. LUDO PRIVATE ROOM, INVITES & MIC SYSTEM ---
         function openLudoMenu() {
             document.getElementById('ludo-modal').style.display = 'flex';
             document.getElementById('ludo-select-mode').style.display = 'block';
@@ -706,19 +728,12 @@
                 document.getElementById('ludo-room-code').innerText = 'الغرفة العامة';
             }
 
-            // Listen to Ludo Room in Firebase
             db.ref('ludo_rooms/' + currentLudoRoom).on('value', snap => {
                 if (snap.exists()) {
                     const roomData = snap.val();
                     if (roomData.lastRoll) {
                         document.getElementById('ludo-dice-display').innerHTML = `🎲 <span>${roomData.lastRoll}</span>`;
-                        document.getElementById('ludo-status-msg').innerText = `آخر رمية من ${roomData.lastPlayer}: حصل على ${roomData.lastRoll}!`;
-                    }
-                    if (roomData.positions) {
-                        document.getElementById('pos-red').innerText = roomData.positions.red || 0;
-                        document.getElementById('pos-green').innerText = roomData.positions.green || 0;
-                        document.getElementById('pos-blue').innerText = roomData.positions.blue || 0;
-                        document.getElementById('pos-yellow').innerText = roomData.positions.yellow || 0;
+                        document.getElementById('ludo-status-msg').innerText = `رمية ${roomData.lastPlayer}: جاب ${roomData.lastRoll}!`;
                     }
                 }
             });
@@ -727,12 +742,12 @@
         function sendRoomInvite() {
             const select = document.getElementById('invite-friends-dropdown');
             const friendName = select.value;
-            if (!friendName) return alert("اختر صديقاً أولاً لرسال الدعوة!");
+            if (!friendName) return alert("اختر صديقاً أونلاين!");
 
             const roomId = getChatRoomId(currentUser.username, friendName);
             db.ref(`chats/${roomId}`).push({
                 sender: currentUser.username,
-                text: `🎮 دعوة للعب لودو! اضغط هنا للانضمام إلى الغرفة: <button onclick="startLudoGame('${currentLudoRoom}'); closeModal('chat-modal'); openLudoMenu();" style="background:#2ed573; border:none; color:#fff; padding:4px 8px; border-radius:5px; cursor:pointer;">انضمام للغرفة</button>`,
+                text: `🎮 دعوة للودو! <button onclick="startLudoGame('${currentLudoRoom}'); closeModal('chat-modal'); openLudoMenu();" style="background:#2ed573; border:none; color:#fff; padding:4px 8px; border-radius:5px; cursor:pointer;">انضمام للغرفة</button>`,
                 time: Date.now()
             });
 
@@ -741,20 +756,12 @@
 
         function rollLudoDice() {
             const diceValue = Math.floor(Math.random() * 6) + 1;
-            
-            db.ref('ludo_rooms/' + currentLudoRoom).once('value', snap => {
-                let currentPos = (snap.exists() && snap.val().positions && snap.val().positions.red) ? snap.val().positions.red : 0;
-                let newPos = currentPos + diceValue;
-
-                db.ref('ludo_rooms/' + currentLudoRoom).update({
-                    lastRoll: diceValue,
-                    lastPlayer: currentUser.username,
-                    'positions/red': newPos
-                });
+            db.ref('ludo_rooms/' + currentLudoRoom).update({
+                lastRoll: diceValue,
+                lastPlayer: currentUser.username
             });
         }
 
-        // Voice Chat Microphone Logic
         async function toggleVoiceMic() {
             const micBtn = document.getElementById('mic-toggle-btn');
             if (!isMicOn) {
@@ -763,24 +770,21 @@
                     isMicOn = true;
                     micBtn.innerHTML = `<i class="fa-solid fa-microphone"></i> المايك: يعمل 🟢`;
                     micBtn.classList.remove('muted');
-                    alert("🎙️ تم تشغيل المايك المباشر! يمكنك التحدث الآن مع أصدقائك.");
+                    alert("🎙️ المايك المباشر شغال الآن!");
                 } catch (err) {
-                    alert("لم نتمكن من الوصول للميكروفون، يرجى السماح بالوصول من المتصفح!");
+                    alert("يرجى السماح بالوصول للميكروفون من المتصفح!");
                 }
             } else {
-                if (localStream) {
-                    localStream.getTracks().forEach(track => track.stop());
-                }
+                if (localStream) localStream.getTracks().forEach(track => track.stop());
                 isMicOn = false;
                 micBtn.innerHTML = `<i class="fa-solid fa-microphone-slash"></i> المايك: مغلق 🔴`;
                 micBtn.classList.add('muted');
             }
         }
 
-        // --- 7. SOCIAL, FRIENDS & REALTIME CHAT ---
         function sendFriendRequest() {
             const targetId = document.getElementById('friend-search-id').value.trim();
-            if (!targetId || targetId === currentUser.id) return alert("أدخل ID صحيح وصديق مختلف!");
+            if (!targetId || targetId === currentUser.id) return alert("أدخل ID صحيح!");
 
             db.ref('ids/' + targetId).once('value', snap => {
                 if (snap.exists()) {
@@ -801,10 +805,7 @@
             db.ref(`requests/${currentUser.username}`).on('value', snap => {
                 const reqBox = document.getElementById('requests-list');
                 reqBox.innerHTML = '';
-                if (!snap.exists()) {
-                    reqBox.innerHTML = 'لا يوجد طلبات حالياً';
-                    return;
-                }
+                if (!snap.exists()) { reqBox.innerHTML = 'لا يوجد طلبات حالياً'; return; }
                 snap.forEach(child => {
                     const req = child.val();
                     reqBox.innerHTML += `
@@ -826,12 +827,9 @@
                 
                 friendsBox.innerHTML = '';
                 selectBox.innerHTML = '<option value="">-- اختر صديقاً --</option>';
-                ludoInviteSelect.innerHTML = '<option value="">اختر صديقاً...</option>';
+                ludoInviteSelect.innerHTML = '<option value="">اختر صديقاً لدعوته...</option>';
 
-                if (!snap.exists()) {
-                    friendsBox.innerHTML = '- لا يوجد أصدقاء بعد -';
-                    return;
-                }
+                if (!snap.exists()) { friendsBox.innerHTML = '- لا يوجد أصدقاء بعد -'; return; }
 
                 snap.forEach(child => {
                     const friendName = child.key;
@@ -846,35 +844,24 @@
             db.ref(`friends/${currentUser.username}/${friendName}`).set(true);
             db.ref(`friends/${friendName}/${currentUser.username}`).set(true);
             db.ref(`requests/${currentUser.username}/${friendName}`).remove();
-            alert(`تم قبول صداقة ${friendName}! يمكنكما الشات الآن.`);
+            alert(`تم قبول صداقة ${friendName}!`);
         }
 
-        function rejectFriend(friendName) {
-            db.ref(`requests/${currentUser.username}/${friendName}`).remove();
-        }
+        function rejectFriend(friendName) { db.ref(`requests/${currentUser.username}/${friendName}`).remove(); }
 
-        function getChatRoomId(user1, user2) {
-            return [user1, user2].sort().join('_CHAT_');
-        }
+        function getChatRoomId(user1, user2) { return [user1, user2].sort().join('_CHAT_'); }
 
         function loadChatWithSelected() {
             const selectBox = document.getElementById('chat-target-select');
             activeChatFriend = selectBox.value;
             const msgBox = document.getElementById('chat-messages-box');
 
-            if (!activeChatFriend) {
-                msgBox.innerHTML = '<div style="text-align: center; color: #888; margin-top: 50px;">اختر صديقاً من القائمة لبدء المحادثة</div>';
-                return;
-            }
+            if (!activeChatFriend) { msgBox.innerHTML = '<div style="text-align: center; color: #888; margin-top: 50px;">اختر صديقاً لبدء الشات</div>'; return; }
 
             const roomId = getChatRoomId(currentUser.username, activeChatFriend);
-            
             db.ref(`chats/${roomId}`).on('value', snap => {
                 msgBox.innerHTML = '';
-                if (!snap.exists()) {
-                    msgBox.innerHTML = '<div style="text-align: center; color: #aaa;">ابدأ أول رسالة في المحادثة!</div>';
-                    return;
-                }
+                if (!snap.exists()) { msgBox.innerHTML = '<div style="text-align: center; color: #aaa;">ابدأ أول رسالة!</div>'; return; }
                 snap.forEach(child => {
                     const msg = child.val();
                     const isMe = msg.sender === currentUser.username;
@@ -892,23 +879,15 @@
         function sendChatMessage() {
             const input = document.getElementById('chat-input-msg');
             const text = input.value.trim();
-            if (!text) return;
-            if (!activeChatFriend) return alert("اختر صديقاً أولاً لإرسال الرسالة!");
+            if (!text || !activeChatFriend) return;
 
             const roomId = getChatRoomId(currentUser.username, activeChatFriend);
-            db.ref(`chats/${roomId}`).push({
-                sender: currentUser.username,
-                text: text,
-                time: Date.now()
-            });
-
+            db.ref(`chats/${roomId}`).push({ sender: currentUser.username, text: text, time: Date.now() });
             input.value = '';
         }
 
-        // --- 8. ADMIN DASHBOARD LOGIC ---
         function openAdminModal() {
             document.getElementById('admin-modal').style.display = 'flex';
-            
             db.ref('users').on('value', snapshot => {
                 const tbody = document.getElementById('admin-users-list');
                 tbody.innerHTML = '';
@@ -932,39 +911,30 @@
         }
 
         function adminSendCoins(targetUser) {
-            const amount = prompt("أدخل عدد العملات المراد إرسالها:");
-            if (amount && !isNaN(amount)) {
-                db.ref('users/' + targetUser + '/coins').transaction(c => (c || 0) + parseInt(amount));
-            }
+            const amount = prompt("أدخل عدد العملات:");
+            if (amount && !isNaN(amount)) db.ref('users/' + targetUser + '/coins').transaction(c => (c || 0) + parseInt(amount));
         }
 
         function adminChangeId(targetUser) {
-            const newId = prompt("أدخل الرقم التعريفي الجديد (4 أرقام):");
+            const newId = prompt("أدخل ID الجديد (4 أرقام):");
             if (newId && newId.length === 4) {
                 db.ref('users/' + targetUser + '/id').set(newId);
                 db.ref('ids/' + newId).set(targetUser);
-                alert("تم تغيير الـ ID بنجاح!");
+                alert("تم التحديث!");
             }
         }
 
-        // --- 9. ROCK PAPER SCISSORS GAME ---
         function openGameRPS() { document.getElementById('rps-modal').style.display = 'flex'; }
         
         function playRPS(choice) {
             const options = ['rock', 'paper', 'scissors'];
             const icons = { rock: '✊', paper: '✋', scissors: '✌️' };
             const botChoice = options[Math.floor(Math.random() * 3)];
-
-            document.getElementById('p1-hand').innerText = icons[choice];
-            document.getElementById('p2-hand').innerText = icons[botChoice];
+            document.getElementById('rps-hands').innerText = `${icons[choice]} ${icons[botChoice]}`;
 
             if (choice === botChoice) {
                 document.getElementById('rps-result').innerText = "تعادل!";
-            } else if (
-                (choice === 'rock' && botChoice === 'scissors') ||
-                (choice === 'paper' && botChoice === 'rock') ||
-                (choice === 'scissors' && botChoice === 'paper')
-            ) {
+            } else if ((choice === 'rock' && botChoice === 'scissors') || (choice === 'paper' && botChoice === 'rock') || (choice === 'scissors' && botChoice === 'paper')) {
                 document.getElementById('rps-result').innerText = "🎉 فزت بـ 5 عملات!";
                 db.ref('users/' + currentUser.username + '/coins').transaction(c => (c || 0) + 5);
             } else {
@@ -972,20 +942,14 @@
             }
         }
 
-        // --- 10. MODALS NAVIGATION ---
         function openSocialModal() { document.getElementById('social-modal').style.display = 'flex'; }
         function openChatModal() { document.getElementById('chat-modal').style.display = 'flex'; }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-        function closeAllModals() {
-            document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
-        }
+        function closeAllModals() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
 
         function changeAvatar() {
-            const newSeed = prompt("أدخل اسماً أو كلمة لتوليد صورة جديدة:");
-            if (newSeed) {
-                const newAvatar = `https://api.dicebear.com/7.x/bottts/svg?seed=${newSeed}`;
-                db.ref('users/' + currentUser.username + '/avatar').set(newAvatar);
-            }
+            const newSeed = prompt("أدخل اسماً لتوليد صورة جديدة:");
+            if (newSeed) db.ref('users/' + currentUser.username + '/avatar').set(`https://api.dicebear.com/7.x/bottts/svg?seed=${newSeed}`);
         }
     </script>
 </body>
