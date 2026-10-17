@@ -3,256 +3,626 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لعبة زرار محمود الهارب</title>
+    <title>M-Gaming World</title>
+    <!-- FontAwesome & Google Fonts -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            height: 100vh;
-            background: linear-gradient(135deg, #1e3c72, #2a5298);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: white;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
+        :root {
+            --primary: #8a2be2;
+            --accent: #ff007f;
+            --gold: #ffd700;
+            --bg-dark: #0f0c20;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Cairo', sans-serif;
             user-select: none;
         }
 
-        #ui-panel {
-            margin-top: 20px;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 15px 30px;
-            border-radius: 15px;
-            backdrop-filter: blur(5px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            text-align: center;
-            z-index: 10;
+        body {
+            margin: 0;
+            padding: 0;
+            background: radial-gradient(circle at center, #1a153a, var(--bg-dark));
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
         }
 
-        h1 { margin: 0 0 10px 0; font-size: 24px; color: #f1c40f; }
-        .stats { font-size: 18px; margin: 5px 0; }
-
-        /* التحكم في الصوت */
-        .volume-control {
-            margin: 10px 0;
-            display: flex;
+        /* Coin Style */
+        .m-coin {
+            width: 35px;
+            height: 35px;
+            background: radial-gradient(circle at 30% 30%, #fff7a0, var(--gold), #b8860b);
+            border-radius: 50%;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            font-size: 14px;
-        }
-        .volume-control input {
-            cursor: pointer;
-            accent-color: #2ecc71;
+            color: #5c3a00;
+            font-weight: 900;
+            font-size: 20px;
+            box-shadow: 0 4px 10px rgba(255, 215, 0, 0.5), inset 0 0 5px #fff;
+            border: 2px solid #fff;
+            transform-style: preserve-3d;
+            animation: rotateCoin 4s infinite linear;
         }
 
-        #start-btn {
-            padding: 12px 25px;
-            font-size: 18px;
-            background-color: #2ecc71;
-            color: white;
+        @keyframes rotateCoin {
+            0% { transform: rotateY(0deg); }
+            100% { transform: rotateY(360deg); }
+        }
+
+        /* 3D Glass Card */
+        .card-3d {
+            background: rgba(255, 255, 255, 0.07);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            transform-style: preserve-3d;
+            transition: all 0.3s ease;
+        }
+
+        /* Auth Container */
+        #auth-screen {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            perspective: 1000px;
+        }
+
+        .auth-box {
+            width: 380px;
+            padding: 30px;
+            text-align: center;
+            transform: rotateX(5deg) rotateY(-5deg);
+        }
+
+        .auth-box:hover {
+            transform: rotateX(0deg) rotateY(0deg);
+        }
+
+        .auth-box input {
+            width: 100%;
+            padding: 12px 15px;
+            margin: 10px 0;
+            border-radius: 12px;
             border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            transition: background 0.2s;
-            margin-top: 5px;
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+            outline: none;
         }
-        #start-btn:hover { background-color: #27ae60; }
 
-        /* الزرار المستهدف */
-        #game-btn {
-            position: absolute;
-            display: none;
-            padding: 10px 20px;
-            background-color: #e74c3c;
-            color: white;
-            border: 2px solid white;
-            border-radius: 50px;
+        .auth-box button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 15px;
+            border-radius: 12px;
+            border: none;
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            color: #fff;
             font-weight: bold;
             cursor: pointer;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            transition: all 0.1s ease;
-            z-index: 5;
+            box-shadow: 0 5px 15px rgba(255, 0, 127, 0.4);
         }
 
-        /* رسائل الفوز والخسارة */
-        #overlay-message {
+        /* Main Dashboard */
+        #main-app {
+            display: none;
+            padding-bottom: 80px;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            background: rgba(0,0,0,0.4);
+        }
+
+        .user-profile-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .profile-img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid var(--accent);
+            object-fit: cover;
+            cursor: pointer;
+        }
+
+        /* Games Container */
+        .games-section {
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .game-card {
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        /* Rock Paper Scissors Game */
+        .rps-hands {
+            display: flex;
+            justify-content: space-around;
+            font-size: 70px;
+            margin: 20px 0;
+        }
+
+        .hand-anim {
+            animation: shakeHand 0.5s infinite alternate;
+        }
+
+        @keyframes shakeHand {
+            0% { transform: translateY(0) rotate(0deg); }
+            100% { transform: translateY(-15px) rotate(10deg); }
+        }
+
+        /* Ludo Board 3D Preview */
+        .ludo-board-preview {
+            width: 180px;
+            height: 180px;
+            margin: 10px auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+            transform: rotateX(30deg) rotateZ(-10deg);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+        }
+
+        .ludo-zone { border-radius: 10px; }
+        .red { background: #ff4757; }
+        .green { background: #2ed573; }
+        .yellow { background: #ffa502; }
+        .blue { background: #1e90ff; }
+
+        /* Bottom Nav & Chat */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: rgba(15, 12, 32, 0.95);
+            display: flex;
+            justify-content: space-around;
+            padding: 12px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .nav-item {
+            color: #aaa;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .nav-item.active { color: var(--accent); }
+
+        /* Modal Screens */
+        .modal {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            z-index: 100;
+            background: rgba(0,0,0,0.8);
             justify-content: center;
             align-items: center;
-            flex-direction: column;
-            text-align: center;
+            z-index: 999;
         }
 
-        #overlay-message h2 { font-size: 40px; margin-bottom: 20px; }
-        #overlay-message button {
-            padding: 10px 25px;
-            font-size: 18px;
-            background-color: #3498db;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
+        .modal-content {
+            width: 90%;
+            max-width: 500px;
+            padding: 25px;
         }
+
+        /* Admin Dashboard */
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .admin-table th, .admin-table td {
+            padding: 10px;
+            border: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+            font-size: 13px;
+        }
+
+        .status-dot {
+            height: 10px; width: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .online { background: #2ed573; }
+        .offline { background: #ff4757; }
     </style>
 </head>
 <body>
 
-    <!-- لوحة التحكم العلوية -->
-    <div id="ui-panel">
-        <h1>لعبة زرار محمود الهارب 🏃‍♂️</h1>
-        <div class="stats">المرحلة: <span id="level-display">1</span> / 50</div>
-        <div class="stats">الوقت المتبقي: <span id="timer-display">30</span> ثانية</div>
-        
-        <!-- خيار التحكم في الصوت -->
-        <div class="volume-control">
-            <label for="volume-slider">🎵 صوت الموسيقى:</label>
-            <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.3" oninput="changeVolume(this.value)">
+    <!-- 1. AUTH SCREEN -->
+    <div id="auth-screen">
+        <div class="auth-box card-3d">
+            <h2 style="color: var(--gold);"><i class="fa-solid fa-gamepad"></i> مرحباً بك!</h2>
+            <input type="text" id="auth-username" placeholder="اسم الحساب">
+            <input type="password" id="auth-password" placeholder="كلمة السر">
+            
+            <button onclick="handleLogin()">تسجيل الدخول</button>
+            <button onclick="handleRegister()" style="background: rgba(255,255,255,0.1);">إنشاء حساب جديد</button>
+            <p id="auth-error" style="color: #ff4757; font-size: 13px; margin-top: 10px;"></p>
+        </div>
+    </div>
+
+    <!-- 2. MAIN APP -->
+    <div id="main-app">
+        <div class="navbar card-3d">
+            <div class="user-profile-header">
+                <img id="my-avatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=Mahmoud" class="profile-img" onclick="changeAvatar()">
+                <div>
+                    <h4 id="display-name" style="margin: 0;">-</h4>
+                    <span id="display-id" style="font-size: 12px; color: var(--gold);">ID: ----</span>
+                </div>
+            </div>
+            
+            <div style="display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.3); padding: 8px 15px; border-radius: 20px;">
+                <span id="display-coins" style="font-weight: bold; font-size: 18px;">0</span>
+                <div class="m-coin">M</div>
+            </div>
         </div>
 
-        <button id="start-btn" onclick="startGame()">إبدأ اللعبة 🎮</button>
+        <!-- Daily Reward Banner -->
+        <div id="daily-banner" style="margin: 15px; padding: 15px; text-align: center; background: linear-gradient(45deg, #2ed573, #1e90ff); border-radius: 15px; display: none;">
+            <span>🎁 مكافأة اليوم جاهزة! الحصول على <b id="reward-amount">10</b> عملات</span>
+            <button onclick="claimDailyReward()" style="margin-right: 15px; padding: 5px 15px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer;">استلام</button>
+        </div>
+
+        <!-- Admin Button (Shows for 'mahmoud' only) -->
+        <div id="admin-trigger" style="display: none; padding: 0 20px; margin-top: 10px;">
+            <button onclick="openAdminModal()" style="width: 100%; padding: 10px; background: #ff9f43; border: none; border-radius: 10px; font-weight: bold; color: #000; cursor: pointer;">
+                <i class="fa-solid fa-user-shield"></i> فتح لوحة التحكم الأدمن
+            </button>
+        </div>
+
+        <!-- Games Section -->
+        <h3 style="padding: 0 20px; margin-top: 20px;"><i class="fa-solid fa-trophy"></i> الألعاب المتاحة</h3>
+        <div class="games-section">
+            
+            <!-- Rock Paper Scissors Card -->
+            <div class="game-card card-3d" onclick="openGameRPS()">
+                <h3>طوبة ورقة مقص 3D</h3>
+                <div class="rps-hands">
+                    <span>✊</span>
+                    <span>✌️</span>
+                </div>
+                <p>العب ضد الذكاء الاصطناعي واكسب عملات M!</p>
+            </div>
+
+            <!-- Ludo Game Card -->
+            <div class="game-card card-3d" onclick="alert('جاري تجهيز طاولة اللودو الـ 3D التفاعلية!')">
+                <h3>لعبة لودو Ludo 3D</h3>
+                <div class="ludo-board-preview">
+                    <div class="ludo-zone red"></div>
+                    <div class="ludo-zone green"></div>
+                    <div class="ludo-zone blue"></div>
+                    <div class="ludo-zone yellow"></div>
+                </div>
+                <p>تحدَّ أصدقاءك في طاولة اللودو المجسمة</p>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation Bar -->
+        <div class="bottom-nav">
+            <div class="nav-item active" onclick="switchTab('home')"><i class="fa-solid fa-house"></i></div>
+            <div class="nav-item" onclick="openSocialModal()"><i class="fa-solid fa-user-group"></i></div>
+            <div class="nav-item" onclick="openChatModal()"><i class="fa-solid fa-comments"></i></div>
+        </div>
     </div>
 
-    <!-- زر اللعب (زرار محمود) -->
-    <button id="game-btn" onclick="winLevel()">إضغطني!</button>
-
-    <!-- شاشة الرسائل (فوز / خسارة) -->
-    <div id="overlay-message">
-        <h2 id="msg-text"></h2>
-        <button id="msg-btn">متابعة</button>
+    <!-- 3. RPS GAME MODAL -->
+    <div id="rps-modal" class="modal">
+        <div class="modal-content card-3d" style="text-align: center;">
+            <h3>طوبة ورقة مقص 3D</h3>
+            <div class="rps-hands">
+                <div id="p1-hand" class="hand-anim">🤛</div>
+                <div id="p2-hand" class="hand-anim">🤜</div>
+            </div>
+            <div id="rps-result" style="font-weight: bold; margin: 15px 0;">اختر حركتك:</div>
+            <div style="display: flex; justify-content: space-around;">
+                <button onclick="playRPS('rock')" style="padding: 10px 15px; border-radius: 10px;">✊ طوبة</button>
+                <button onclick="playRPS('paper')" style="padding: 10px 15px; border-radius: 10px;">✋ ورقة</button>
+                <button onclick="playRPS('scissors')" style="padding: 10px 15px; border-radius: 10px;">✌️ مقص</button>
+            </div>
+            <button onclick="closeModal('rps-modal')" style="margin-top: 20px; background: #ff4757; border: none; padding: 8px 15px; border-radius: 8px; color: #fff;">إغلاق</button>
+        </div>
     </div>
 
-    <!-- الموسيقى الخلفية -->
-    <audio id="bg-music" loop>
-        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
-    </audio>
+    <!-- 4. SOCIAL & FRIENDS MODAL -->
+    <div id="social-modal" class="modal">
+        <div class="modal-content card-3d">
+            <h3>إضافة صديق</h3>
+            <div style="display: flex; gap: 10px; margin: 15px 0;">
+                <input type="text" id="friend-search-id" placeholder="أدخل ID الصديق (4 أرقام)" style="flex: 1; padding: 10px; border-radius: 8px; border: none;">
+                <button onclick="sendFriendRequest()" style="padding: 10px; background: var(--accent); border: none; border-radius: 8px; color: #fff;">إرسال طلب</button>
+            </div>
+            <h4>الأصدقاء الحاليين:</h4>
+            <div id="friends-list" style="max-height: 150px; overflow-y: auto;">- لا يوجد أصدقاء بعد -</div>
+            <button onclick="closeModal('social-modal')" style="margin-top: 15px; background: #ff4757; border: none; padding: 8px 15px; border-radius: 8px; color: #fff;">إغلاق</button>
+        </div>
+    </div>
 
+    <!-- 5. ADMIN DASHBOARD MODAL -->
+    <div id="admin-modal" class="modal">
+        <div class="modal-content card-3d" style="max-width: 700px; overflow-x: auto;">
+            <h3>لوحة تحكم الأدمن (خاصة بـ Mahmoud)</h3>
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>الحالة</th>
+                        <th>اسم الحساب</th>
+                        <th>كلمة السر</th>
+                        <th>ID</th>
+                        <th>العملات</th>
+                        <th>إجراءات التحكم</th>
+                    </tr>
+                </thead>
+                <tbody id="admin-users-list">
+                    <!-- Populated via Firebase -->
+                </tbody>
+            </table>
+            <button onclick="closeModal('admin-modal')" style="margin-top: 20px; background: #ff4757; border: none; padding: 8px 15px; border-radius: 8px; color: #fff;">إغلاق</button>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT & LOGIC -->
     <script>
-        let level = 1;
-        const maxLevels = 50;
-        let timeLeft = 30;
-        let timerInterval;
-        let moveInterval;
+        // --- 1. FIREBASE CONFIGURATION ---
+        const firebaseConfig = {
+            databaseURL: "https://YOUR-FIREBASE-PROJECT-NAME.firebaseio.com" // ضع رابط قاعدة بيانات الفايربيز الخاصة بك هنا
+        };
         
-        const gameBtn = document.getElementById('game-btn');
-        const startBtn = document.getElementById('start-btn');
-        const levelDisplay = document.getElementById('level-display');
-        const timerDisplay = document.getElementById('timer-display');
-        const overlay = document.getElementById('overlay-message');
-        const msgText = document.getElementById('msg-text');
-        const msgBtn = document.getElementById('msg-btn');
-        const bgMusic = document.getElementById('bg-music');
-        const volumeSlider = document.getElementById('volume-slider');
+        // Initialize Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.database();
 
-        // ضبط الصوت المبدئي
-        bgMusic.volume = volumeSlider.value;
-
-        // دالة تغيير الصوت من الشريط
-        function changeVolume(val) {
-            bgMusic.volume = val;
+        // --- 2. DEVICE FINGERPRINT & LOCAL STORAGE ---
+        function getDeviceId() {
+            let devId = localStorage.getItem('m_device_id');
+            if (!devId) {
+                devId = 'DEV-' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('m_device_id', devId);
+            }
+            return devId;
         }
 
-        // بدء اللعبة
-        function startGame() {
-            startBtn.style.display = 'none';
-            gameBtn.style.display = 'block';
-            resetTimer();
-            setupLevel();
-            
-            // تشغيل الموسيقى بالصوت المحدد
-            bgMusic.play().catch(e => console.log("المتصفح يتطلب تفاعل لتشغيل الصوت"));
-        }
+        let currentUser = null;
 
-        // إعدادات المرحلة
-        function setupLevel() {
-            clearInterval(moveInterval);
-            
-            // الصعوبة تزيد مع المراحل (السرعة تزيد والحجم يصغر)
-            let speed = Math.max(200, 1100 - (level * 18)); 
-            let scale = Math.max(0.6, 1.2 - (level * 0.012)); 
-            
-            gameBtn.style.transform = `scale(${scale})`;
-            moveButton();
-            moveInterval = setInterval(moveButton, speed);
-        }
+        // --- 3. AUTO LOGIN CHECK ---
+        window.onload = function() {
+            const savedUser = JSON.parse(localStorage.getItem('m_saved_user'));
+            if (savedUser) {
+                loginSuccess(savedUser);
+            }
+        };
 
-        // تحريك الزرار عشوائياً
-        function moveButton() {
-            const maxX = window.innerWidth - gameBtn.offsetWidth - 40;
-            const maxY = window.innerHeight - gameBtn.offsetHeight - 160; // زيادة الهامش بسبب شريط الصوت
-            
-            const randomX = Math.max(20, Math.floor(Math.random() * maxX));
-            const randomY = Math.max(180, Math.floor(Math.random() * maxY));
-            
-            gameBtn.style.left = randomX + 'px';
-            gameBtn.style.top = randomY + 'px';
-        }
+        // --- 4. AUTHENTICATION LOGIC ---
+        function handleRegister() {
+            const user = document.getElementById('auth-username').value.trim().toLowerCase();
+            const pass = document.getElementById('auth-password').value.trim();
+            const devId = getDeviceId();
 
-        // مؤقت الـ 30 ثانية
-        function resetTimer() {
-            clearInterval(timerInterval);
-            timeLeft = 30;
-            timerDisplay.innerText = timeLeft;
-            
-            timerInterval = setInterval(() => {
-                timeLeft--;
-                timerDisplay.innerText = timeLeft;
-                
-                if (timeLeft <= 0) {
-                    gameOver();
+            if (!user || !pass) return showAuthError("يرجى ملء جميع الحقول!");
+
+            // Check if device already has an account
+            db.ref('devices/' + devId).once('value', snapshot => {
+                if (snapshot.exists()) {
+                    showAuthError("جهازك عليه حساب بالفعل ياناصح!");
+                } else {
+                    // Check if username taken
+                    db.ref('users/' + user).once('value', uSnap => {
+                        if (uSnap.exists()) {
+                            showAuthError("اسم الحساب هذا مستخدم بالفعل!");
+                        } else {
+                            // Generate unique 4-digit ID
+                            const uniqueId = Math.floor(1000 + Math.random() * 9000).toString();
+                            const userData = {
+                                username: user,
+                                password: pass,
+                                id: uniqueId,
+                                coins: 10,
+                                lastClaim: 0,
+                                rewardMultiplier: 1,
+                                deviceId: devId,
+                                online: true,
+                                avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${user}`
+                            };
+
+                            db.ref('users/' + user).set(userData);
+                            db.ref('devices/' + devId).set(user);
+                            db.ref('ids/' + uniqueId).set(user);
+
+                            loginSuccess(userData);
+                        }
+                    });
                 }
-            }, 1000);
+            });
         }
 
-        // الفوز بالمرحلة
-        function winLevel() {
-            clearInterval(moveInterval);
-            clearInterval(timerInterval);
-            gameBtn.style.display = 'none';
+        function handleLogin() {
+            const user = document.getElementById('auth-username').value.trim().toLowerCase();
+            const pass = document.getElementById('auth-password').value.trim();
 
-            if (level >= maxLevels) {
-                showOverlay("🎉 مبروك! لقد تختمت الـ 50 مرحلة وهزمت زرار محمود! 🎉", "إعادة اللعب من جديد", true);
-            } else {
-                showOverlay(`مبروك كسبت المرحلة ${level}! 👋`, "الانتقال للمرحلة التالية", false);
+            if (!user || !pass) return showAuthError("يرجى ملء كافة الحقول!");
+
+            db.ref('users/' + user).once('value', snapshot => {
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    if (data.password === pass) {
+                        loginSuccess(data);
+                    } else {
+                        showAuthError("كلمة السر غير صحيحة!");
+                    }
+                } else {
+                    showAuthError("الحساب غير موجود!");
+                }
+            });
+        }
+
+        function loginSuccess(userData) {
+            currentUser = userData;
+            localStorage.setItem('m_saved_user', JSON.stringify(userData));
+            
+            document.getElementById('auth-screen').style.display = 'none';
+            document.getElementById('main-app').style.display = 'block';
+
+            // Mark online status in DB
+            db.ref('users/' + currentUser.username + '/online').set(true);
+            db.ref('users/' + currentUser.username + '/online').onDisconnect().set(false);
+
+            updateUI();
+            checkDailyReward();
+
+            // Admin Button check
+            if (currentUser.username === 'mahmoud') {
+                document.getElementById('admin-trigger').style.display = 'block';
             }
         }
 
-        // الخسارة
-        function gameOver() {
-            clearInterval(moveInterval);
-            clearInterval(timerInterval);
-            gameBtn.style.display = 'none';
-            
-            showOverlay("حاول مره اخري ياغبي 🤭", "إعادة المحاولة", true);
+        function showAuthError(msg) {
+            document.getElementById('auth-error').innerText = msg;
         }
 
-        // إظهار الرسائل المنبثقة
-        function showOverlay(text, buttonText, isReset) {
-            msgText.innerText = text;
-            msgBtn.innerText = buttonText;
-            overlay.style.display = 'flex';
-            
-            msgBtn.onclick = function() {
-                overlay.style.display = 'none';
-                if (isReset) {
-                    level = 1;
-                    levelDisplay.innerText = level;
-                    startGame();
-                } else {
-                    level++;
-                    levelDisplay.innerText = level;
-                    gameBtn.style.display = 'block';
-                    resetTimer();
-                    setupLevel();
+        function updateUI() {
+            // Live Listener for User Data
+            db.ref('users/' + currentUser.username).on('value', snap => {
+                if (snap.exists()) {
+                    currentUser = snap.val();
+                    document.getElementById('display-name').innerText = currentUser.username;
+                    document.getElementById('display-id').innerText = 'ID: ' + currentUser.id;
+                    document.getElementById('display-coins').innerText = currentUser.coins;
+                    document.getElementById('my-avatar').src = currentUser.avatar;
                 }
-            };
+            });
+        }
+
+        // --- 5. DAILY REWARD SYSTEM ---
+        function checkDailyReward() {
+            const now = Date.now();
+            const oneDay = 24 * 60 * 60 * 1000;
+            const lastClaim = currentUser.lastClaim || 0;
+
+            if (now - lastClaim >= oneDay) {
+                let reward = 10 * (currentUser.rewardMultiplier || 1);
+                document.getElementById('reward-amount').innerText = reward;
+                document.getElementById('daily-banner').style.display = 'block';
+            }
+        }
+
+        function claimDailyReward() {
+            let mult = (currentUser.rewardMultiplier || 1) * 2; // يتضاعف كل يوم
+            let reward = 10 * (currentUser.rewardMultiplier || 1);
+
+            db.ref('users/' + currentUser.username).update({
+                coins: currentUser.coins + reward,
+                lastClaim: Date.now(),
+                rewardMultiplier: mult
+            });
+
+            document.getElementById('daily-banner').style.display = 'none';
+            alert(`🎉 مبروك! استلمت ${reward} عملة صفراء M!`);
+        }
+
+        // --- 6. ADMIN DASHBOARD LOGIC ---
+        function openAdminModal() {
+            document.getElementById('admin-modal').style.display = 'flex';
+            
+            db.ref('users').on('value', snapshot => {
+                const tbody = document.getElementById('admin-users-list');
+                tbody.innerHTML = '';
+                snapshot.forEach(child => {
+                    const u = child.val();
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><span class="status-dot ${u.online ? 'online' : 'offline'}"></span></td>
+                            <td>${u.username}</td>
+                            <td>${u.password}</td>
+                            <td>${u.id}</td>
+                            <td>${u.coins}</td>
+                            <td>
+                                <button onclick="adminSendCoins('${u.username}')" style="background:#2ed573; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">+ عملات</button>
+                                <button onclick="adminChangeId('${u.username}')" style="background:#1e90ff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">تغيير ID</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            });
+        }
+
+        function adminSendCoins(targetUser) {
+            const amount = prompt("أدخل عدد العملات المراد إرسالها:");
+            if (amount && !isNaN(amount)) {
+                db.ref('users/' + targetUser + '/coins').transaction(c => (c || 0) + parseInt(amount));
+            }
+        }
+
+        function adminChangeId(targetUser) {
+            const newId = prompt("أدخل الرقم التعريفي الجديد (4 أرقام):");
+            if (newId && newId.length === 4) {
+                db.ref('users/' + targetUser + '/id').set(newId);
+                db.ref('ids/' + newId).set(targetUser);
+                alert("تم تغيير الـ ID بنجاح!");
+            }
+        }
+
+        // --- 7. ROCK PAPER SCISSORS GAME ---
+        function openGameRPS() { document.getElementById('rps-modal').style.display = 'flex'; }
+        
+        function playRPS(choice) {
+            const options = ['rock', 'paper', 'scissors'];
+            const icons = { rock: '✊', paper: '✋', scissors: '✌️' };
+            const botChoice = options[Math.floor(Math.random() * 3)];
+
+            document.getElementById('p1-hand').innerText = icons[choice];
+            document.getElementById('p2-hand').innerText = icons[botChoice];
+
+            if (choice === botChoice) {
+                document.getElementById('rps-result').innerText = "تعادل!";
+            } else if (
+                (choice === 'rock' && botChoice === 'scissors') ||
+                (choice === 'paper' && botChoice === 'rock') ||
+                (choice === 'scissors' && botChoice === 'paper')
+            ) {
+                document.getElementById('rps-result').innerText = "🎉 فزت بـ 5 عملات!";
+                db.ref('users/' + currentUser.username + '/coins').transaction(c => (c || 0) + 5);
+            } else {
+                document.getElementById('rps-result').innerText = "❌ خسر الجولة!";
+            }
+        }
+
+        // --- 8. SOCIAL & UTILS ---
+        function openSocialModal() { document.getElementById('social-modal').style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+        function changeAvatar() {
+            const newSeed = prompt("أدخل اسماً أو كلمة لتوليد صورة جديدة:");
+            if (newSeed) {
+                const newAvatar = `https://api.dicebear.com/7.x/bottts/svg?seed=${newSeed}`;
+                db.ref('users/' + currentUser.username + '/avatar').set(newAvatar);
+            }
         }
     </script>
 </body>
