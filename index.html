@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>M-Gaming World - High Quality WebRTC Voice & 3D Gifts</title>
+    <title>M-Gaming World - Voice, Gifts & XO Game</title>
     <!-- FontAwesome & Google Fonts -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
@@ -136,7 +136,7 @@
         .games-section {
             padding: 20px;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 20px;
         }
 
@@ -173,6 +173,33 @@
         .action-choice-btn:hover {
             background: var(--accent);
             transform: scale(1.05);
+        }
+
+        /* --- ❌⭕ XO BOARD STYLES --- */
+        .xo-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            width: 270px;
+            height: 270px;
+            margin: 20px auto;
+        }
+
+        .xo-cell {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid var(--gold);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .xo-cell:hover {
+            background: rgba(255, 0, 127, 0.2);
         }
 
         /* --- 🎁 3D GIFTS PANEL IN CHAT --- */
@@ -229,6 +256,20 @@
             animation: floatGift3D 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
             filter: drop-shadow(0 10px 20px rgba(255,215,0,0.8));
         }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: rgba(15, 12, 32, 0.95);
+            display: flex;
+            justify-content: space-around;
+            padding: 12px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .nav-item { color: #aaa; font-size: 20px; cursor: pointer; }
+        .nav-item.active { color: var(--accent); }
 
         .modal {
             display: none;
@@ -294,7 +335,6 @@
 </head>
 <body>
 
-    <!-- Remote Audio Player -->
     <audio id="remote-audio" autoplay playsinline></audio>
 
     <!-- AUTH SCREEN -->
@@ -334,9 +374,16 @@
         <h3 style="padding: 0 20px; margin-top: 20px;"><i class="fa-solid fa-trophy"></i> الألعاب المتاحة</h3>
         <div class="games-section">
             <div class="game-card card-3d" onclick="openGameRPS()">
-                <h2 style="color: var(--gold); margin-bottom: 10px;">طوبة ورقة مقص (صوت مباشر 🎙️)</h2>
-                <div style="font-size: 65px; margin: 15px 0;">✊ ✋ ✌️</div>
-                <p>تحدَّ أصدقاءك مع الصوت المباشر وهدايا الشات المجسمة!</p>
+                <h2 style="color: var(--gold); margin-bottom: 10px;">طوبة ورقة مقص 3D</h2>
+                <div style="font-size: 55px; margin: 10px 0;">✊ ✋ ✌️</div>
+                <p>صوت مباشر + هدايا مجسمة 🎙️</p>
+            </div>
+
+            <!-- ❌⭕ GAME CARD -->
+            <div class="game-card card-3d" onclick="openGameXO()">
+                <h2 style="color: var(--accent); margin-bottom: 10px;">لعبة إكس أو (XO)</h2>
+                <div style="font-size: 55px; margin: 10px 0;">❌ ⭕</div>
+                <p>تحدَّ صديقك أونلاين بدعوة مباشرة!</p>
             </div>
         </div>
 
@@ -376,6 +423,38 @@
             </div>
 
             <button onclick="closeModal('rps-modal')" style="margin-top: 20px; background: #ff4757; border: none; padding: 8px 15px; border-radius: 8px; color: #fff; font-weight: bold;">خروج</button>
+        </div>
+    </div>
+
+    <!-- ❌⭕ XO GAME MODAL WITH ONLINE INVITE -->
+    <div id="xo-modal" class="modal">
+        <div class="modal-content card-3d" style="text-align: center;">
+            <h3 style="color: var(--accent);">❌⭕ حلبة إكس أو (XO) أونلاين</h3>
+
+            <div style="margin-bottom: 15px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px; display: flex; gap: 8px; justify-content: center;">
+                <select id="invite-xo-friends-dropdown" style="padding: 6px; border-radius: 6px; background: rgba(255,255,255,0.15); color: #fff; border: none; width: 60%;">
+                    <option value="">اختر صديقاً لدعوته...</option>
+                </select>
+                <button onclick="sendXoInvite()" style="padding: 6px 12px; background: var(--accent); border: none; border-radius: 6px; color: #fff; font-weight: bold;">إرسال دعوة</button>
+            </div>
+
+            <p id="xo-status-msg" style="font-size: 14px; color: var(--gold); font-weight: bold;">اختر صديقاً أو اضغط على خانة للعب!</p>
+
+            <!-- 3x3 XO Grid -->
+            <div class="xo-grid">
+                <div class="xo-cell" onclick="makeXoMove(0)"></div>
+                <div class="xo-cell" onclick="makeXoMove(1)"></div>
+                <div class="xo-cell" onclick="makeXoMove(2)"></div>
+                <div class="xo-cell" onclick="makeXoMove(3)"></div>
+                <div class="xo-cell" onclick="makeXoMove(4)"></div>
+                <div class="xo-cell" onclick="makeXoMove(5)"></div>
+                <div class="xo-cell" onclick="makeXoMove(6)"></div>
+                <div class="xo-cell" onclick="makeXoMove(7)"></div>
+                <div class="xo-cell" onclick="makeXoMove(8)"></div>
+            </div>
+
+            <button onclick="resetXoGame()" style="background: var(--primary); border: none; padding: 8px 15px; border-radius: 8px; color: #fff; font-weight: bold; margin-left: 5px;">إعادة اللعب 🔄</button>
+            <button onclick="closeModal('xo-modal')" style="background: #ff4757; border: none; padding: 8px 15px; border-radius: 8px; color: #fff; font-weight: bold;">خروج</button>
         </div>
     </div>
 
@@ -426,7 +505,6 @@
                     <div style="font-size:28px;">🚀</div>
                     <small>صاروخ (100)</small>
                 </div>
-                <!-- هدية خولة بمليون عملة -->
                 <div class="gift-item million-gift" onclick="send3DKeyGift('👑', 'هدية خولة الأسطورية', 1000000)">
                     <div style="font-size:32px;">👑</div>
                     <strong style="color: #ffd700;">هدية خولة (1,000,000 عملة)</strong>
@@ -476,6 +554,11 @@
         let localStream = null;
         let isMicActive = false;
 
+        // XO Variables
+        let currentXoRoom = null;
+        let xoSymbol = 'X';
+        let xoBoard = Array(9).fill('');
+
         function getDeviceId() {
             let devId = localStorage.getItem('m_device_id');
             if (!devId) {
@@ -510,7 +593,7 @@
                                 username: user,
                                 password: pass,
                                 id: uniqueId,
-                                coins: 1000050, // رصيد تجريبي لتجربة هدية خولة
+                                coins: 1000050,
                                 online: true
                             };
                             db.ref('users/' + user).set(userData);
@@ -566,15 +649,137 @@
             });
         }
 
-        // --- 🎁 3D GIFTS SYSTEM (INCLUDES KHAWLA GIFT) ---
+        // --- ❌⭕ XO GAME LOGIC & ONLINE INVITE ---
+        function openGameXO(roomIdToJoin = null) {
+            document.getElementById('xo-modal').style.display = 'flex';
+
+            if (roomIdToJoin) {
+                currentXoRoom = roomIdToJoin;
+                xoSymbol = 'O';
+                joinXoRoom(currentXoRoom);
+            } else {
+                currentXoRoom = 'XO_ROOM_' + currentUser.username;
+                xoSymbol = 'X';
+                createXoRoom(currentXoRoom);
+            }
+        }
+
+        function createXoRoom(roomId) {
+            db.ref(`xo_rooms/${roomId}`).set({
+                board: Array(9).fill(''),
+                turn: 'X',
+                p1: currentUser.username,
+                p2: '',
+                winner: ''
+            });
+            listenToXoRoom(roomId);
+        }
+
+        function joinXoRoom(roomId) {
+            db.ref(`xo_rooms/${roomId}`).update({ p2: currentUser.username });
+            listenToXoRoom(roomId);
+        }
+
+        function listenToXoRoom(roomId) {
+            db.ref(`xo_rooms/${roomId}`).on('value', snap => {
+                if (!snap.exists()) return;
+                const data = snap.val();
+                xoBoard = data.board || Array(9).fill('');
+
+                // Render Board
+                const cells = document.querySelectorAll('.xo-cell');
+                cells.forEach((cell, idx) => {
+                    cell.innerText = xoBoard[idx];
+                    cell.style.color = xoBoard[idx] === 'X' ? '#ff007f' : '#ffd700';
+                });
+
+                const statusMsg = document.getElementById('xo-status-msg');
+                if (data.winner) {
+                    if (data.winner === 'draw') statusMsg.innerText = "🤝 تعادل بين الطرفين!";
+                    else statusMsg.innerText = `🎉 الفائز هو: ${data.winner}!`;
+                } else {
+                    const isMyTurn = (data.turn === xoSymbol);
+                    statusMsg.innerText = isMyTurn ? `دورك الآن (${xoSymbol})!` : `في انتظار دور الخصم (${data.turn})...`;
+                }
+            });
+        }
+
+        function makeXoMove(index) {
+            if (!currentXoRoom) return alert("انضم لغرفة أولاً!");
+            if (xoBoard[index] !== '') return;
+
+            db.ref(`xo_rooms/${currentXoRoom}`).once('value', snap => {
+                const data = snap.val();
+                if (data.winner) return;
+                if (data.turn !== xoSymbol) return alert("ليس دورك الآن!");
+
+                xoBoard[index] = xoSymbol;
+                const nextTurn = xoSymbol === 'X' ? 'O' : 'X';
+                const winnerSymbol = checkXoWinner(xoBoard);
+
+                let winnerName = '';
+                if (winnerSymbol === 'X') winnerName = data.p1;
+                else if (winnerSymbol === 'O') winnerName = data.p2;
+                else if (winnerSymbol === 'draw') winnerName = 'draw';
+
+                db.ref(`xo_rooms/${currentXoRoom}`).update({
+                    board: xoBoard,
+                    turn: nextTurn,
+                    winner: winnerName
+                });
+            });
+        }
+
+        function checkXoWinner(b) {
+            const lines = [
+                [0,1,2], [3,4,5], [6,7,8],
+                [0,3,6], [1,4,7], [2,5,8],
+                [0,4,8], [2,4,6]
+            ];
+            for (let l of lines) {
+                if (b[l[0]] && b[l[0]] === b[l[1]] && b[l[0]] === b[l[2]]) return b[l[0]];
+            }
+            if (b.every(cell => cell !== '')) return 'draw';
+            return null;
+        }
+
+        function resetXoGame() {
+            if (currentXoRoom) {
+                db.ref(`xo_rooms/${currentXoRoom}`).update({
+                    board: Array(9).fill(''),
+                    turn: 'X',
+                    winner: ''
+                });
+            }
+        }
+
+        function sendXoInvite() {
+            const select = document.getElementById('invite-xo-friends-dropdown');
+            const friendName = select.value;
+            if (!friendName) return alert("اختر صديقاً لدعوته!");
+
+            const roomId = 'XO_ROOM_' + currentUser.username;
+            openGameXO();
+
+            const chatRoomId = getChatRoomId(currentUser.username, friendName);
+            db.ref(`chats/${chatRoomId}`).push({
+                sender: currentUser.username,
+                text: `🎮 يتداعاك لمباراة إكس أو (XO)! <button onclick="closeModal('chat-modal'); openGameXO('${roomId}');" style="background:#2ed573; border:none; color:#fff; padding:5px 10px; border-radius:5px; cursor:pointer;">انضمام للعبة</button>`,
+                time: Date.now()
+            });
+
+            alert(`تم إرسال دعوة XO إلى ${friendName}!`);
+        }
+
+        // --- 🎁 GIFTS & CHAT ---
         function toggleGiftsPopup() {
             const popup = document.getElementById('gifts-popup-menu');
             popup.style.display = popup.style.display === 'grid' ? 'none' : 'grid';
         }
 
         function send3DKeyGift(emoji, giftName, cost) {
-            if (!activeChatFriend) return alert("اختر صديقاً من القائمة أولاً!");
-            if (currentUser.coins < cost) return alert("❌ رصيدك لا يكفي لشراء هدية خولة!");
+            if (!activeChatFriend) return alert("اختر صديقاً أولاً!");
+            if (currentUser.coins < cost) return alert("❌ رصيدك لا يكفي!");
 
             db.ref('users/' + currentUser.username + '/coins').transaction(c => c - cost);
             db.ref('users/' + activeChatFriend + '/coins').transaction(c => (c || 0) + cost);
@@ -707,8 +912,11 @@
             db.ref(`friends/${currentUser.username}`).on('value', snap => {
                 const friendsBox = document.getElementById('friends-list');
                 const selectBox = document.getElementById('chat-target-select');
+                const xoInviteSelect = document.getElementById('invite-xo-friends-dropdown');
+
                 friendsBox.innerHTML = '';
                 selectBox.innerHTML = '<option value="">-- اختر صديقاً --</option>';
+                xoInviteSelect.innerHTML = '<option value="">اختر صديقاً لدعوته...</option>';
 
                 if (!snap.exists()) { friendsBox.innerHTML = '- لا يوجد أصدقاء -'; return; }
 
@@ -716,6 +924,7 @@
                     const friendName = child.key;
                     friendsBox.innerHTML += `<div style="padding:4px; color:var(--gold);"><i class="fa-solid fa-user"></i> ${friendName}</div>`;
                     selectBox.innerHTML += `<option value="${friendName}">${friendName}</option>`;
+                    xoInviteSelect.innerHTML += `<option value="${friendName}">${friendName}</option>`;
                 });
             });
         }
