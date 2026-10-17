@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>M-Gaming World - High Quality WebRTC Voice</title>
+    <title>M-Gaming World - High Quality WebRTC Voice & 3D Gifts</title>
     <!-- FontAwesome & Google Fonts -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
@@ -175,6 +175,61 @@
             transform: scale(1.05);
         }
 
+        /* --- 🎁 3D GIFTS PANEL IN CHAT --- */
+        .gifts-popup {
+            display: none;
+            position: absolute;
+            bottom: 60px;
+            right: 10px;
+            left: 10px;
+            background: rgba(20, 15, 40, 0.95);
+            backdrop-filter: blur(15px);
+            border: 2px solid var(--gold);
+            border-radius: 15px;
+            padding: 15px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            z-index: 100;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        .gift-item {
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+            border: 1px solid rgba(255,215,0,0.3);
+        }
+
+        .gift-item.million-gift {
+            background: linear-gradient(45deg, #ffd700, #ff007f);
+            border: 2px solid #fff;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+            grid-column: span 3;
+        }
+
+        .gift-item:hover {
+            transform: scale(1.05);
+            background: rgba(255,0,127,0.3);
+        }
+
+        @keyframes floatGift3D {
+            0% { transform: scale(0.3) translateY(40px) rotate(-10deg); opacity: 0; }
+            50% { transform: scale(1.4) translateY(-15px) rotate(10deg); opacity: 1; }
+            100% { transform: scale(1) translateY(0) rotate(0deg); opacity: 1; }
+        }
+
+        .gift-animation-box {
+            font-size: 60px;
+            display: inline-block;
+            animation: floatGift3D 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            filter: drop-shadow(0 10px 20px rgba(255,215,0,0.8));
+        }
+
         .modal {
             display: none;
             position: fixed;
@@ -193,6 +248,27 @@
             overflow-y: auto;
             position: relative;
         }
+
+        .chat-box-container {
+            height: 220px;
+            overflow-y: auto;
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .chat-msg {
+            max-width: 80%;
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-size: 14px;
+        }
+        .chat-msg.me { align-self: flex-end; background: var(--primary); color: #fff; }
+        .chat-msg.other { align-self: flex-start; background: rgba(255,255,255,0.15); color: #fff; }
 
         .mic-btn {
             background: #2ed573;
@@ -260,8 +336,14 @@
             <div class="game-card card-3d" onclick="openGameRPS()">
                 <h2 style="color: var(--gold); margin-bottom: 10px;">طوبة ورقة مقص (صوت مباشر 🎙️)</h2>
                 <div style="font-size: 65px; margin: 15px 0;">✊ ✋ ✌️</div>
-                <p>تحدَّ أصدقاءك مع الصوت المباشر بجودة عالية ومضمونة!</p>
+                <p>تحدَّ أصدقاءك مع الصوت المباشر وهدايا الشات المجسمة!</p>
             </div>
+        </div>
+
+        <div class="bottom-nav">
+            <div class="nav-item active" onclick="closeAllModals()"><i class="fa-solid fa-house"></i></div>
+            <div class="nav-item" onclick="openSocialModal()"><i class="fa-solid fa-user-group"></i></div>
+            <div class="nav-item" onclick="openChatModal()"><i class="fa-solid fa-comments"></i></div>
         </div>
     </div>
 
@@ -297,6 +379,69 @@
         </div>
     </div>
 
+    <!-- SOCIAL MODAL -->
+    <div id="social-modal" class="modal">
+        <div class="modal-content card-3d">
+            <h3>إضافة صديق</h3>
+            <div style="display: flex; gap: 10px; margin: 15px 0;">
+                <input type="text" id="friend-search-id" placeholder="أدخل ID الصديق (4 أرقام)" style="flex: 1; padding: 10px; border-radius: 8px; border: none;">
+                <button onclick="sendFriendRequest()" style="padding: 10px; background: var(--accent); border: none; border-radius: 8px; color: #fff;">إرسال طلب</button>
+            </div>
+            <h4>طلبات الصداقة المعلقة:</h4>
+            <div id="requests-list" style="max-height: 100px; overflow-y: auto; margin-bottom: 10px;">لا يوجد طلبات حالياً</div>
+            <h4>الأصدقاء الحاليين:</h4>
+            <div id="friends-list" style="max-height: 120px; overflow-y: auto;">- لا يوجد أصدقاء بعد -</div>
+            <button onclick="closeModal('social-modal')" style="margin-top: 15px; background: #ff4757; border: none; padding: 8px 15px; border-radius: 8px; color: #fff;">إغلاق</button>
+        </div>
+    </div>
+
+    <!-- CHAT MODAL WITH GIFTS -->
+    <div id="chat-modal" class="modal">
+        <div class="modal-content card-3d" style="position: relative;">
+            <h3>الشات والمحادثات أونلاين</h3>
+            <div style="margin-bottom: 10px;">
+                <select id="chat-target-select" onchange="loadChatWithSelected()" style="width: 100%; padding: 8px; border-radius: 8px; background: rgba(255,255,255,0.1); color: #fff; border: none;">
+                    <option value="">-- اختر صديقاً للمحادثة --</option>
+                </select>
+            </div>
+            <div class="chat-box-container" id="chat-messages-box">
+                <div style="text-align: center; color: #888; margin-top: 50px;">اختر صديقاً لبدء الشات</div>
+            </div>
+
+            <!-- 🎁 3D Gifts Popup Menu -->
+            <div class="gifts-popup" id="gifts-popup-menu">
+                <div class="gift-item" onclick="send3DKeyGift('🌹', 'وردة ملكية', 10)">
+                    <div style="font-size:28px;">🌹</div>
+                    <small>وردة (10)</small>
+                </div>
+                <div class="gift-item" onclick="send3DKeyGift('💍', 'خاتم ألماس', 25)">
+                    <div style="font-size:28px;">💍</div>
+                    <small>خاتم (25)</small>
+                </div>
+                <div class="gift-item" onclick="send3DKeyGift('🏎️', 'سيارة رياضية', 50)">
+                    <div style="font-size:28px;">🏎️</div>
+                    <small>سيارة (50)</small>
+                </div>
+                <div class="gift-item" onclick="send3DKeyGift('🚀', 'صاروخ فضائي', 100)">
+                    <div style="font-size:28px;">🚀</div>
+                    <small>صاروخ (100)</small>
+                </div>
+                <!-- هدية خولة بمليون عملة -->
+                <div class="gift-item million-gift" onclick="send3DKeyGift('👑', 'هدية خولة الأسطورية', 1000000)">
+                    <div style="font-size:32px;">👑</div>
+                    <strong style="color: #ffd700;">هدية خولة (1,000,000 عملة)</strong>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 8px; align-items: center; position: relative;">
+                <button onclick="toggleGiftsPopup()" style="background: var(--gold); border: none; padding: 10px 12px; border-radius: 8px; cursor: pointer; font-size: 16px;" title="إرسال هدايا 3D">🎁</button>
+                <input type="text" id="chat-input-msg" placeholder="اكتب رسالتك..." style="flex: 1; padding: 10px; border-radius: 8px; border: none;">
+                <button onclick="sendChatMessage()" style="padding: 10px 15px; background: var(--primary); border: none; border-radius: 8px; color: #fff;">إرسال</button>
+            </div>
+            <button onclick="closeModal('chat-modal')" style="margin-top: 15px; background: #ff4757; border: none; padding: 8px 15px; border-radius: 8px; color: #fff;">إغلاق</button>
+        </div>
+    </div>
+
     <!-- ADMIN MODAL -->
     <div id="admin-modal" class="modal">
         <div class="modal-content card-3d">
@@ -326,9 +471,57 @@
         const db = firebase.database();
 
         let currentUser = null;
+        let activeChatFriend = null;
         let peer = null;
         let localStream = null;
         let isMicActive = false;
+
+        function getDeviceId() {
+            let devId = localStorage.getItem('m_device_id');
+            if (!devId) {
+                devId = 'DEV-' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('m_device_id', devId);
+            }
+            return devId;
+        }
+
+        window.onload = function() {
+            const savedUser = JSON.parse(localStorage.getItem('m_saved_user'));
+            if (savedUser) loginSuccess(savedUser);
+        };
+
+        function handleRegister() {
+            const user = document.getElementById('auth-username').value.trim().toLowerCase();
+            const pass = document.getElementById('auth-password').value.trim();
+            const devId = getDeviceId();
+
+            if (!user || !pass) return alert("يرجى ملء جميع الحقول!");
+
+            db.ref('devices/' + devId).once('value', snapshot => {
+                if (snapshot.exists()) {
+                    alert("جهازك عليه حساب بالفعل!");
+                } else {
+                    db.ref('users/' + user).once('value', uSnap => {
+                        if (uSnap.exists()) {
+                            alert("اسم الحساب مستخدم بالفعل!");
+                        } else {
+                            const uniqueId = Math.floor(1000 + Math.random() * 9000).toString();
+                            const userData = {
+                                username: user,
+                                password: pass,
+                                id: uniqueId,
+                                coins: 1000050, // رصيد تجريبي لتجربة هدية خولة
+                                online: true
+                            };
+                            db.ref('users/' + user).set(userData);
+                            db.ref('devices/' + devId).set(user);
+                            db.ref('ids/' + uniqueId).set(user);
+                            loginSuccess(userData);
+                        }
+                    });
+                }
+            });
+        }
 
         function handleLogin() {
             const user = document.getElementById('auth-username').value.trim().toLowerCase();
@@ -336,39 +529,64 @@
 
             db.ref('users/' + user).once('value', snapshot => {
                 if (snapshot.exists() && snapshot.val().password === pass) {
-                    currentUser = snapshot.val();
-                    document.getElementById('auth-screen').style.display = 'none';
-                    document.getElementById('main-app').style.display = 'block';
-                    document.getElementById('display-name').innerText = currentUser.username;
-                    document.getElementById('display-coins').innerText = currentUser.coins || 0;
-                    
-                    if (currentUser.username === 'mahmoud') {
-                        document.getElementById('admin-trigger').style.display = 'block';
-                    }
-                    initPeerJS();
+                    loginSuccess(snapshot.val());
                 } else {
                     alert("خطأ في البيانات!");
                 }
             });
         }
 
-        function handleRegister() {
-            const user = document.getElementById('auth-username').value.trim().toLowerCase();
-            const pass = document.getElementById('auth-password').value.trim();
-            if (!user || !pass) return alert("املاً البيانات!");
-
-            const userData = { username: user, password: pass, coins: 50, online: true };
-            db.ref('users/' + user).set(userData);
+        function loginSuccess(userData) {
             currentUser = userData;
+            localStorage.setItem('m_saved_user', JSON.stringify(userData));
+            
             document.getElementById('auth-screen').style.display = 'none';
             document.getElementById('main-app').style.display = 'block';
-            document.getElementById('display-name').innerText = currentUser.username;
-            document.getElementById('display-coins').innerText = 50;
+
+            db.ref('users/' + currentUser.username + '/online').set(true);
+            db.ref('users/' + currentUser.username + '/online').onDisconnect().set(false);
+
+            updateUI();
+            listenForSocialUpdates();
 
             if (currentUser.username === 'mahmoud') {
                 document.getElementById('admin-trigger').style.display = 'block';
             }
             initPeerJS();
+        }
+
+        function updateUI() {
+            db.ref('users/' + currentUser.username).on('value', snap => {
+                if (snap.exists()) {
+                    currentUser = snap.val();
+                    document.getElementById('display-name').innerText = currentUser.username;
+                    document.getElementById('display-id').innerText = 'ID: ' + currentUser.id;
+                    document.getElementById('display-coins').innerText = currentUser.coins || 0;
+                }
+            });
+        }
+
+        // --- 🎁 3D GIFTS SYSTEM (INCLUDES KHAWLA GIFT) ---
+        function toggleGiftsPopup() {
+            const popup = document.getElementById('gifts-popup-menu');
+            popup.style.display = popup.style.display === 'grid' ? 'none' : 'grid';
+        }
+
+        function send3DKeyGift(emoji, giftName, cost) {
+            if (!activeChatFriend) return alert("اختر صديقاً من القائمة أولاً!");
+            if (currentUser.coins < cost) return alert("❌ رصيدك لا يكفي لشراء هدية خولة!");
+
+            db.ref('users/' + currentUser.username + '/coins').transaction(c => c - cost);
+            db.ref('users/' + activeChatFriend + '/coins').transaction(c => (c || 0) + cost);
+
+            const roomId = getChatRoomId(currentUser.username, activeChatFriend);
+            db.ref(`chats/${roomId}`).push({
+                sender: currentUser.username,
+                text: `<div style="text-align:center;"><div class="gift-animation-box">${emoji}</div><p style="margin:5px 0 0; color:var(--gold); font-weight:bold;">أرسل هدية: ${giftName} (${cost.toLocaleString()} عملة)</p></div>`,
+                time: Date.now()
+            });
+
+            document.getElementById('gifts-popup-menu').style.display = 'none';
         }
 
         // --- ⚙️ ADMIN PANEL CONTROLS ---
@@ -389,7 +607,6 @@
                             <td>
                                 <button onclick="adminSendCoins('${u.username}')" style="background:#2ed573; border:none; padding:4px 8px; border-radius:4px; color:#fff; cursor:pointer;">+ عملات</button>
                                 <button onclick="adminZeroCoins('${u.username}')" style="background:#ff4757; border:none; padding:4px 8px; border-radius:4px; color:#fff; cursor:pointer; margin-right:3px;">🔄 تصفير</button>
-                                <button onclick="adminChangeId('${u.username}')" style="background:#1e90ff; border:none; padding:4px 8px; border-radius:4px; color:#fff; cursor:pointer; margin-right:3px;">تغيير ID</button>
                             </td>
                         </tr>
                     `;
@@ -398,41 +615,29 @@
         }
 
         function adminSendCoins(targetUser) {
-            const amount = prompt("أدخل عدد العملات لإضافتها:");
+            const amount = prompt("أدخل عدد العملات:");
             if (amount && !isNaN(amount)) {
                 db.ref('users/' + targetUser + '/coins').transaction(c => (c || 0) + parseInt(amount));
             }
         }
 
-        // 🔄 NEW: ZERO COINS FUNCTION FOR ADMIN
         function adminZeroCoins(targetUser) {
-            if (confirm(`هل أنت تأكد من تصفير عملات الحساب (${targetUser})؟`)) {
+            if (confirm(`هل أنت متأكد من تصفير عملات الحساب (${targetUser})؟`)) {
                 db.ref('users/' + targetUser + '/coins').set(0);
-                alert(`تم تصفير عملات ${targetUser} بنجاح!`);
+                alert(`تم تصفير عملات ${targetUser}!`);
             }
         }
 
-        function adminChangeId(targetUser) {
-            const newId = prompt("أدخل ID الجديد (4 أرقام):");
-            if (newId && newId.length === 4) {
-                db.ref('users/' + targetUser + '/id').set(newId);
-                db.ref('ids/' + newId).set(targetUser);
-                alert("تم تحديث ID بنجاح!");
-            }
-        }
-
-        // --- 🎙️ PeerJS High Quality Voice Streaming ---
+        // --- 🎙️ PeerJS Voice ---
         function initPeerJS() {
             peer = new Peer('mgaming_user_' + currentUser.username);
-
             peer.on('call', call => {
                 navigator.mediaDevices.getUserMedia({ audio: true, video: false }).then(stream => {
                     localStream = stream;
                     call.answer(stream);
                     call.on('stream', remoteStream => {
-                        const audioEl = document.getElementById('remote-audio');
-                        audioEl.srcObject = remoteStream;
-                        document.getElementById('voice-status').innerText = "🔊 الصوت المباشر شغال مع الخصم!";
+                        document.getElementById('remote-audio').srcObject = remoteStream;
+                        document.getElementById('voice-status').innerText = "🔊 الصوت المباشر شغال!";
                     });
                 });
             });
@@ -440,8 +645,7 @@
 
         async function togglePeerVoice() {
             const micBtn = document.getElementById('mic-toggle-btn');
-            const targetUser = prompt("أدخل اسم الخصم للاتصال بصوته المباشر:");
-
+            const targetUser = prompt("أدخل اسم الخصم للاتصال الصوتي:");
             if (!targetUser) return;
 
             if (!isMicActive) {
@@ -453,12 +657,11 @@
 
                     const call = peer.call('mgaming_user_' + targetUser.toLowerCase(), localStream);
                     call.on('stream', remoteStream => {
-                        const audioEl = document.getElementById('remote-audio');
-                        audioEl.srcObject = remoteStream;
-                        document.getElementById('voice-status').innerText = "🔊 متصل صوتيًا مع " + targetUser;
+                        document.getElementById('remote-audio').srcObject = remoteStream;
+                        document.getElementById('voice-status').innerText = "🔊 متصل مع " + targetUser;
                     });
                 } catch (err) {
-                    alert("يرجى إعطاء الصلاحية للميكروفون!");
+                    alert("خطأ في الميكروفون!");
                 }
             } else {
                 if (localStream) localStream.getTracks().forEach(track => track.stop());
@@ -469,8 +672,101 @@
             }
         }
 
+        // --- SOCIAL & CHAT ---
+        function sendFriendRequest() {
+            const targetId = document.getElementById('friend-search-id').value.trim();
+            if (!targetId || targetId === currentUser.id) return alert("أدخل ID صحيح!");
+
+            db.ref('ids/' + targetId).once('value', snap => {
+                if (snap.exists()) {
+                    const friendUser = snap.val();
+                    db.ref(`requests/${friendUser}/${currentUser.username}`).set({ from: currentUser.username });
+                    alert(`تم إرسال الطلب إلى ${friendUser}!`);
+                } else {
+                    alert("لم يتم العثور على حساب بهذا الـ ID!");
+                }
+            });
+        }
+
+        function listenForSocialUpdates() {
+            db.ref(`requests/${currentUser.username}`).on('value', snap => {
+                const reqBox = document.getElementById('requests-list');
+                reqBox.innerHTML = '';
+                if (!snap.exists()) { reqBox.innerHTML = 'لا يوجد طلبات حالياً'; return; }
+                snap.forEach(child => {
+                    const req = child.val();
+                    reqBox.innerHTML += `
+                        <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.1); padding:5px 10px; border-radius:8px; margin-bottom:5px;">
+                            <span><b>${req.from}</b> أضافك</span>
+                            <button onclick="acceptFriend('${req.from}')" style="background:#2ed573; border:none; color:#fff; border-radius:4px; cursor:pointer;">قبول</button>
+                        </div>
+                    `;
+                });
+            });
+
+            db.ref(`friends/${currentUser.username}`).on('value', snap => {
+                const friendsBox = document.getElementById('friends-list');
+                const selectBox = document.getElementById('chat-target-select');
+                friendsBox.innerHTML = '';
+                selectBox.innerHTML = '<option value="">-- اختر صديقاً --</option>';
+
+                if (!snap.exists()) { friendsBox.innerHTML = '- لا يوجد أصدقاء -'; return; }
+
+                snap.forEach(child => {
+                    const friendName = child.key;
+                    friendsBox.innerHTML += `<div style="padding:4px; color:var(--gold);"><i class="fa-solid fa-user"></i> ${friendName}</div>`;
+                    selectBox.innerHTML += `<option value="${friendName}">${friendName}</option>`;
+                });
+            });
+        }
+
+        function acceptFriend(friendName) {
+            db.ref(`friends/${currentUser.username}/${friendName}`).set(true);
+            db.ref(`friends/${friendName}/${currentUser.username}`).set(true);
+            db.ref(`requests/${currentUser.username}/${friendName}`).remove();
+            alert("تم قبول الصداقة!");
+        }
+
+        function getChatRoomId(u1, u2) { return [u1, u2].sort().join('_CHAT_'); }
+
+        function loadChatWithSelected() {
+            activeChatFriend = document.getElementById('chat-target-select').value;
+            const msgBox = document.getElementById('chat-messages-box');
+            if (!activeChatFriend) { msgBox.innerHTML = '<div style="text-align: center; color: #888; margin-top: 50px;">اختر صديقاً</div>'; return; }
+
+            const roomId = getChatRoomId(currentUser.username, activeChatFriend);
+            db.ref(`chats/${roomId}`).on('value', snap => {
+                msgBox.innerHTML = '';
+                if (!snap.exists()) { msgBox.innerHTML = '<div style="text-align: center; color: #aaa;">ابدأ الشات!</div>'; return; }
+                snap.forEach(child => {
+                    const msg = child.val();
+                    const isMe = msg.sender === currentUser.username;
+                    msgBox.innerHTML += `
+                        <div class="chat-msg ${isMe ? 'me' : 'other'}">
+                            <small style="font-size:10px; display:block; opacity:0.8;">${msg.sender}</small>
+                            ${msg.text}
+                        </div>
+                    `;
+                });
+                msgBox.scrollTop = msgBox.scrollHeight;
+            });
+        }
+
+        function sendChatMessage() {
+            const input = document.getElementById('chat-input-msg');
+            const text = input.value.trim();
+            if (!text || !activeChatFriend) return;
+
+            const roomId = getChatRoomId(currentUser.username, activeChatFriend);
+            db.ref(`chats/${roomId}`).push({ sender: currentUser.username, text: text, time: Date.now() });
+            input.value = '';
+        }
+
         function openGameRPS() { document.getElementById('rps-modal').style.display = 'flex'; }
+        function openSocialModal() { document.getElementById('social-modal').style.display = 'flex'; }
+        function openChatModal() { document.getElementById('chat-modal').style.display = 'flex'; }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+        function closeAllModals() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
     </script>
 </body>
 </html>
