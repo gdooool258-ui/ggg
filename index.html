@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>M-Gaming World - RPS Online</title>
+    <title>M-Gaming World - RPS Bet Online</title>
     <!-- FontAwesome & Google Fonts -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
@@ -148,11 +148,9 @@
             transition: transform 0.3s;
         }
 
-        .game-card:hover {
-            transform: translateY(-5px);
-        }
+        .game-card:hover { transform: translateY(-5px); }
 
-        /* ✊ Rock Paper Scissors Hands Arena */
+        /* ✊ Rock Paper Scissors Arena */
         .rps-hands-container {
             display: flex;
             justify-content: space-around;
@@ -162,11 +160,8 @@
             min-height: 120px;
         }
 
-        .hand-box {
-            transition: transform 0.2s;
-        }
+        .hand-box { transition: transform 0.2s; }
 
-        /* Hand shaking animation before reveal */
         .hand-shaking {
             animation: shakeHand3D 0.5s infinite alternate ease-in-out;
         }
@@ -314,11 +309,10 @@
 
         <h3 style="padding: 0 20px; margin-top: 20px;"><i class="fa-solid fa-trophy"></i> الألعاب المتاحة</h3>
         <div class="games-section">
-            <!-- Main Game Card -->
             <div class="game-card card-3d" onclick="openGameRPS()">
-                <h2 style="color: var(--gold); margin-bottom: 10px;">طوبة ورقة مقص 3D أونلاين</h2>
+                <h2 style="color: var(--gold); margin-bottom: 10px;">طوبة ورقة مقص 3D (رهان العملات)</h2>
                 <div style="font-size: 65px; margin: 15px 0;">✊ ✋ ✌️</div>
-                <p>تحدَّ أصدقاءك، اهتز الأيدي 3D، واكسب عملات M! 🎙️</p>
+                <p>حدد رهانك من العملات، تحدَّ أصدقاءك، والي يكسب ياخد الكل! 🎙️</p>
             </div>
         </div>
 
@@ -329,22 +323,29 @@
         </div>
     </div>
 
-    <!-- ✊ RPS GAME MODAL WITH ONLINE INVITE & ANIMATED HANDS -->
+    <!-- ✊ RPS GAME MODAL WITH COIN BETS & ANIMATED HANDS -->
     <div id="rps-modal" class="modal">
         <div class="modal-content card-3d" style="text-align: center;">
-            <h3 style="color: var(--gold);">🎮 حلبة طوبة ورقة مقص 3D</h3>
+            <h3 style="color: var(--gold);">🎮 حلبة الرهان - طوبة ورقة مقص 3D</h3>
             
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <span id="rps-room-code" style="color: #aaa; font-size: 13px;">غرفة: عامة</span>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <span id="rps-bet-tag" style="color: var(--gold); font-size: 14px; font-weight: bold;">قيمة الرهان: 10 عملات</span>
                 <button class="mic-btn" id="mic-toggle-btn" onclick="toggleVoiceMic()"><i class="fa-solid fa-microphone"></i> المايك: مغلق</button>
             </div>
 
-            <!-- Invite Friend Dropdown -->
-            <div style="margin-bottom: 15px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px;">
-                <select id="invite-rps-friends-dropdown" style="padding: 8px; border-radius: 8px; background: rgba(255,255,255,0.15); color: #fff; border: none; width: 60%;">
-                    <option value="">اختر صديقاً للتحدي...</option>
+            <!-- Bet Selector & Invite Friend -->
+            <div style="margin-bottom: 15px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px; display: flex; gap: 8px; align-items: center; justify-content: center;">
+                <label style="font-size: 12px;">الرهان:</label>
+                <select id="rps-bet-amount" style="padding: 6px; border-radius: 6px; background: rgba(255,255,255,0.15); color: #fff; border: none;">
+                    <option value="5">5 عملات M</option>
+                    <option value="10" selected>10 عملات M</option>
+                    <option value="20">20 عملة M</option>
+                    <option value="50">50 عملة M</option>
                 </select>
-                <button onclick="sendRpsInvite()" style="padding: 8px 15px; background: var(--accent); border: none; border-radius: 8px; color: #fff; font-weight: bold;">دعوة للتحدي</button>
+                <select id="invite-rps-friends-dropdown" style="padding: 6px; border-radius: 6px; background: rgba(255,255,255,0.15); color: #fff; border: none;">
+                    <option value="">اختر صديقاً...</option>
+                </select>
+                <button onclick="sendRpsInvite()" style="padding: 6px 12px; background: var(--accent); border: none; border-radius: 6px; color: #fff; font-weight: bold;">دعوة</button>
             </div>
 
             <!-- Hands Animation Display -->
@@ -360,7 +361,7 @@
                 </div>
             </div>
 
-            <div id="rps-result" style="font-weight: bold; font-size: 18px; margin: 15px 0; color: #2ed573;">اختر حركتك لبدء الاهتزاز!</div>
+            <div id="rps-result" style="font-weight: bold; font-size: 16px; margin: 10px 0; color: #2ed573;">اختر حركتك وبدء الرهان!</div>
 
             <!-- Choice Action Buttons -->
             <div style="display: flex; justify-content: space-around; gap: 10px;">
@@ -369,7 +370,7 @@
                 <button class="action-choice-btn" onclick="playRpsAction('scissors')">✌️ مقص</button>
             </div>
 
-            <button onclick="closeModal('rps-modal')" style="margin-top: 25px; background: #ff4757; border: none; padding: 10px 20px; border-radius: 10px; color: #fff; font-weight: bold;">خروج من الحلبة</button>
+            <button onclick="closeModal('rps-modal')" style="margin-top: 20px; background: #ff4757; border: none; padding: 8px 15px; border-radius: 8px; color: #fff; font-weight: bold;">خروج</button>
         </div>
     </div>
 
@@ -442,7 +443,6 @@
 
         let currentUser = null;
         let activeChatFriend = null;
-        let activeRpsRoom = 'global_rps_room';
         let localStream = null;
         let isMicOn = false;
 
@@ -480,7 +480,7 @@
                                 username: user,
                                 password: pass,
                                 id: uniqueId,
-                                coins: 10,
+                                coins: 20, // Starting bonus
                                 lastClaim: 0,
                                 rewardMultiplier: 1,
                                 deviceId: devId,
@@ -575,31 +575,33 @@
             alert(`🎉 مبروك! استلمت ${reward} عملة M!`);
         }
 
-        // --- ✊ RPS GAME LOGIC WITH ONLINE INVITE & ANIMATED HANDS ---
+        // --- ✊ RPS GAME WITH COIN BETS & ANIMATED HANDS ---
         function openGameRPS() {
             document.getElementById('rps-modal').style.display = 'flex';
             document.getElementById('p1-name-tag').innerText = currentUser.username;
         }
 
         function playRpsAction(myChoice) {
+            const betAmount = parseInt(document.getElementById('rps-bet-amount').value);
+            if (currentUser.coins < betAmount) {
+                return alert("❌ لا توجد عملات كافية لديك لتغطية قيمة الرهان!");
+            }
+
             const p1Hand = document.getElementById('p1-hand');
             const p2Hand = document.getElementById('p2-hand');
             const resultMsg = document.getElementById('rps-result');
 
-            // Reset hands to fists for shaking
+            // Reset and start 3D shake animation
             p1Hand.innerText = '🤛';
             p2Hand.innerText = '🤜';
-            
-            // Add shaking 3D animation
             p1Hand.classList.add('hand-shaking');
             p2Hand.classList.add('hand-shaking');
-            resultMsg.innerText = "جاري هز الأيدي... ✊✋✌️";
+            resultMsg.innerText = "جاري هز الأيدي والرهان... ✊✋✌️";
 
             const options = ['rock', 'paper', 'scissors'];
             const icons = { rock: '✊', paper: '✋', scissors: '✌️' };
             const botChoice = options[Math.floor(Math.random() * 3)];
 
-            // Stop shaking & show result after 1.5s
             setTimeout(() => {
                 p1Hand.classList.remove('hand-shaking');
                 p2Hand.classList.remove('hand-shaking');
@@ -608,16 +610,20 @@
                 p2Hand.innerText = icons[botChoice];
 
                 if (myChoice === botChoice) {
-                    resultMsg.innerText = "🤝 تعادل الجولة!";
+                    resultMsg.innerText = "🤝 تعادل! استرددت عملات رهانتك.";
                 } else if (
                     (myChoice === 'rock' && botChoice === 'scissors') ||
                     (myChoice === 'paper' && botChoice === 'rock') ||
                     (myChoice === 'scissors' && botChoice === 'paper')
                 ) {
-                    resultMsg.innerText = "🎉 فزت بالجولة وحصلت على 5 عملات M!";
-                    db.ref('users/' + currentUser.username + '/coins').transaction(c => (c || 0) + 5);
+                    // Winner gets their coins back + opponent's bet (bot simulated as opponent)
+                    const prize = betAmount * 2;
+                    db.ref('users/' + currentUser.username + '/coins').transaction(c => c + betAmount);
+                    resultMsg.innerText = `🎉 فزت بالجولة! ربحت ${prize} عملة M!`;
                 } else {
-                    resultMsg.innerText = "❌ خسر الجولة، حاول مجدداً!";
+                    // Loser loses bet amount
+                    db.ref('users/' + currentUser.username + '/coins').transaction(c => Math.max(0, c - betAmount));
+                    resultMsg.innerText = `❌ خسرْت الجولة، خسرت ${betAmount} عملة M!`;
                 }
             }, 1500);
         }
@@ -625,16 +631,17 @@
         function sendRpsInvite() {
             const select = document.getElementById('invite-rps-friends-dropdown');
             const friendName = select.value;
+            const betAmount = document.getElementById('rps-bet-amount').value;
             if (!friendName) return alert("اختر صديقاً أولاً لإرسال الدعوة!");
 
             const roomId = getChatRoomId(currentUser.username, friendName);
             db.ref(`chats/${roomId}`).push({
                 sender: currentUser.username,
-                text: `🎮 يتداعاك لمباراة طوبة ورقة مقص 3D! <button onclick="closeModal('chat-modal'); openGameRPS();" style="background:#2ed573; border:none; color:#fff; padding:4px 8px; border-radius:5px; cursor:pointer;">قبول التحدي</button>`,
+                text: `🎮 تحدي طوبة ورقة مقص 3D بـ ${betAmount} عملة M! <button onclick="closeModal('chat-modal'); openGameRPS();" style="background:#2ed573; border:none; color:#fff; padding:4px 8px; border-radius:5px; cursor:pointer;">قبول التحدي</button>`,
                 time: Date.now()
             });
 
-            alert(`تم إرسال دعوة التحدي بنجاح إلى ${friendName}!`);
+            alert(`تم إرسال دعوة التحدي مع رهان ${betAmount} عملة إلى ${friendName}!`);
         }
 
         async function toggleVoiceMic() {
@@ -685,7 +692,7 @@
                 snap.forEach(child => {
                     const req = child.val();
                     reqBox.innerHTML += `
-                        <div style="display:flex; justify-between; align-items:center; background:rgba(255,255,255,0.1); padding:5px 10px; border-radius:8px; margin-bottom:5px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.1); padding:5px 10px; border-radius:8px; margin-bottom:5px;">
                             <span>لقد أضافك: <b>${req.from}</b></span>
                             <div>
                                 <button onclick="acceptFriend('${req.from}')" style="background:#2ed573; border:none; color:#fff; border-radius:4px; cursor:pointer;">قبول</button>
@@ -703,7 +710,7 @@
                 
                 friendsBox.innerHTML = '';
                 selectBox.innerHTML = '<option value="">-- اختر صديقاً --</option>';
-                rpsInviteSelect.innerHTML = '<option value="">اختر صديقاً للتحدي...</option>';
+                rpsInviteSelect.innerHTML = '<option value="">اختر صديقاً...</option>';
 
                 if (!snap.exists()) { friendsBox.innerHTML = '- لا يوجد أصدقاء بعد -'; return; }
 
