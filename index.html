@@ -228,6 +228,38 @@
             padding: 25px;
         }
 
+        /* Chat Box Styles */
+        .chat-box-container {
+            height: 250px;
+            overflow-y: auto;
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .chat-msg {
+            max-width: 80%;
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-size: 14px;
+        }
+
+        .chat-msg.me {
+            align-self: flex-end;
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .chat-msg.other {
+            align-self: flex-start;
+            background: rgba(255,255,255,0.15);
+            color: #fff;
+        }
+
         /* Admin Dashboard */
         .admin-table {
             width: 100%;
@@ -325,7 +357,7 @@
 
         <!-- Bottom Navigation Bar -->
         <div class="bottom-nav">
-            <div class="nav-item active" onclick="switchTab('home')"><i class="fa-solid fa-house"></i></div>
+            <div class="nav-item active" onclick="closeAllModals()"><i class="fa-solid fa-house"></i></div>
             <div class="nav-item" onclick="openSocialModal()"><i class="fa-solid fa-user-group"></i></div>
             <div class="nav-item" onclick="openChatModal()"><i class="fa-solid fa-comments"></i></div>
         </div>
@@ -357,13 +389,36 @@
                 <input type="text" id="friend-search-id" placeholder="أدخل ID الصديق (4 أرقام)" style="flex: 1; padding: 10px; border-radius: 8px; border: none;">
                 <button onclick="sendFriendRequest()" style="padding: 10px; background: var(--accent); border: none; border-radius: 8px; color: #fff;">إرسال طلب</button>
             </div>
+            <h4>طلبات الصداقة المعلقة:</h4>
+            <div id="requests-list" style="max-height: 100px; overflow-y: auto; margin-bottom: 10px;">لا يوجد طلبات حالياً</div>
             <h4>الأصدقاء الحاليين:</h4>
-            <div id="friends-list" style="max-height: 150px; overflow-y: auto;">- لا يوجد أصدقاء بعد -</div>
+            <div id="friends-list" style="max-height: 120px; overflow-y: auto;">- لا يوجد أصدقاء بعد -</div>
             <button onclick="closeModal('social-modal')" style="margin-top: 15px; background: #ff4757; border: none; padding: 8px 15px; border-radius: 8px; color: #fff;">إغلاق</button>
         </div>
     </div>
 
-    <!-- 5. ADMIN DASHBOARD MODAL -->
+    <!-- 5. CHAT MODAL -->
+    <div id="chat-modal" class="modal">
+        <div class="modal-content card-3d">
+            <h3 id="chat-header-title">الشات والمحادثات</h3>
+            <div id="chat-friends-select" style="margin-bottom: 10px;">
+                <label style="font-size: 12px;">اختر صديق للمحادثة:</label>
+                <select id="chat-target-select" onchange="loadChatWithSelected()" style="width: 100%; padding: 8px; border-radius: 8px; background: rgba(255,255,255,0.1); color: #fff; border: none;">
+                    <option value="">-- اختر صديقاً --</option>
+                </select>
+            </div>
+            <div class="chat-box-container" id="chat-messages-box">
+                <div style="text-align: center; color: #888; margin-top: 50px;">اختر صديقاً من القائمة لبدء المحادثة</div>
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <input type="text" id="chat-input-msg" placeholder="اكتب رسالتك..." style="flex: 1; padding: 10px; border-radius: 8px; border: none;">
+                <button onclick="sendChatMessage()" style="padding: 10px 15px; background: var(--primary); border: none; border-radius: 8px; color: #fff;">إرسال</button>
+            </div>
+            <button onclick="closeModal('chat-modal')" style="margin-top: 15px; background: #ff4757; border: none; padding: 8px 15px; border-radius: 8px; color: #fff;">إغلاق</button>
+        </div>
+    </div>
+
+    <!-- 6. ADMIN DASHBOARD MODAL -->
     <div id="admin-modal" class="modal">
         <div class="modal-content card-3d" style="max-width: 700px; overflow-x: auto;">
             <h3>لوحة تحكم الأدمن (خاصة بـ Mahmoud)</h3>
@@ -389,7 +444,7 @@
     <!-- JAVASCRIPT & LOGIC -->
     <script>
         // --- 1. FIREBASE CONFIGURATION ---
-    const firebaseConfig = {
+        const firebaseConfig = {
             databaseURL: "https://vortex-259f7-default-rtdb.firebaseio.com"
         };
         
@@ -410,6 +465,7 @@
         }
 
         let currentUser = null;
+        let activeChatFriend = null;
 
         // --- 3. AUTO LOGIN CHECK ---
         window.onload = function() {
@@ -427,17 +483,14 @@
 
             if (!user || !pass) return showAuthError("يرجى ملء جميع الحقول!");
 
-            // Check if device already has an account
             db.ref('devices/' + devId).once('value', snapshot => {
                 if (snapshot.exists()) {
                     showAuthError("جهازك عليه حساب بالفعل ياناصح!");
                 } else {
-                    // Check if username taken
                     db.ref('users/' + user).once('value', uSnap => {
                         if (uSnap.exists()) {
                             showAuthError("اسم الحساب هذا مستخدم بالفعل!");
                         } else {
-                            // Generate unique 4-digit ID
                             const uniqueId = Math.floor(1000 + Math.random() * 9000).toString();
                             const userData = {
                                 username: user,
@@ -489,14 +542,13 @@
             document.getElementById('auth-screen').style.display = 'none';
             document.getElementById('main-app').style.display = 'block';
 
-            // Mark online status in DB
             db.ref('users/' + currentUser.username + '/online').set(true);
             db.ref('users/' + currentUser.username + '/online').onDisconnect().set(false);
 
             updateUI();
             checkDailyReward();
+            listenForSocialUpdates();
 
-            // Admin Button check
             if (currentUser.username === 'mahmoud') {
                 document.getElementById('admin-trigger').style.display = 'block';
             }
@@ -507,7 +559,6 @@
         }
 
         function updateUI() {
-            // Live Listener for User Data
             db.ref('users/' + currentUser.username).on('value', snap => {
                 if (snap.exists()) {
                     currentUser = snap.val();
@@ -533,7 +584,7 @@
         }
 
         function claimDailyReward() {
-            let mult = (currentUser.rewardMultiplier || 1) * 2; // يتضاعف كل يوم
+            let mult = (currentUser.rewardMultiplier || 1) * 2;
             let reward = 10 * (currentUser.rewardMultiplier || 1);
 
             db.ref('users/' + currentUser.username).update({
@@ -546,7 +597,133 @@
             alert(`🎉 مبروك! استلمت ${reward} عملة صفراء M!`);
         }
 
-        // --- 6. ADMIN DASHBOARD LOGIC ---
+        // --- 6. SOCIAL, FRIENDS & REALTIME CHAT ---
+        function sendFriendRequest() {
+            const targetId = document.getElementById('friend-search-id').value.trim();
+            if (!targetId || targetId === currentUser.id) return alert("أدخل ID صحيح وصديق مختلف!");
+
+            db.ref('ids/' + targetId).once('value', snap => {
+                if (snap.exists()) {
+                    const friendUser = snap.val();
+                    db.ref(`requests/${friendUser}/${currentUser.username}`).set({
+                        from: currentUser.username,
+                        fromId: currentUser.id
+                    });
+                    alert(`تم إرسال طلب الصداقة إلى ${friendUser}!`);
+                    document.getElementById('friend-search-id').value = '';
+                } else {
+                    alert("لم يتم العثور على حساب بهذا الـ ID!");
+                }
+            });
+        }
+
+        function listenForSocialUpdates() {
+            // Listen for Friend Requests
+            db.ref(`requests/${currentUser.username}`).on('value', snap => {
+                const reqBox = document.getElementById('requests-list');
+                reqBox.innerHTML = '';
+                if (!snap.exists()) {
+                    reqBox.innerHTML = 'لا يوجد طلبات حالياً';
+                    return;
+                }
+                snap.forEach(child => {
+                    const req = child.val();
+                    reqBox.innerHTML += `
+                        <div style="display:flex; justify-between; align-items:center; background:rgba(255,255,255,0.1); padding:5px 10px; border-radius:8px; margin-bottom:5px;">
+                            <span>لقد أضافك: <b>${req.from}</b></span>
+                            <div>
+                                <button onclick="acceptFriend('${req.from}')" style="background:#2ed573; border:none; color:#fff; border-radius:4px; cursor:pointer;">قبول</button>
+                                <button onclick="rejectFriend('${req.from}')" style="background:#ff4757; border:none; color:#fff; border-radius:4px; cursor:pointer;">رفض</button>
+                            </div>
+                        </div>
+                    `;
+                });
+            });
+
+            // Listen for Friends List
+            db.ref(`friends/${currentUser.username}`).on('value', snap => {
+                const friendsBox = document.getElementById('friends-list');
+                const selectBox = document.getElementById('chat-target-select');
+                friendsBox.innerHTML = '';
+                selectBox.innerHTML = '<option value="">-- اختر صديقاً --</option>';
+
+                if (!snap.exists()) {
+                    friendsBox.innerHTML = '- لا يوجد أصدقاء بعد -';
+                    return;
+                }
+
+                snap.forEach(child => {
+                    const friendName = child.key;
+                    friendsBox.innerHTML += `<div style="padding:4px; color:var(--gold);"><i class="fa-solid fa-user"></i> ${friendName}</div>`;
+                    selectBox.innerHTML += `<option value="${friendName}">${friendName}</option>`;
+                });
+            });
+        }
+
+        function acceptFriend(friendName) {
+            db.ref(`friends/${currentUser.username}/${friendName}`).set(true);
+            db.ref(`friends/${friendName}/${currentUser.username}`).set(true);
+            db.ref(`requests/${currentUser.username}/${friendName}`).remove();
+            alert(`تم قبول صداقة ${friendName}! يمكنكما الشات الآن.`);
+        }
+
+        function rejectFriend(friendName) {
+            db.ref(`requests/${currentUser.username}/${friendName}`).remove();
+        }
+
+        function getChatRoomId(user1, user2) {
+            return [user1, user2].sort().join('_CHAT_');
+        }
+
+        function loadChatWithSelected() {
+            const selectBox = document.getElementById('chat-target-select');
+            activeChatFriend = selectBox.value;
+            const msgBox = document.getElementById('chat-messages-box');
+
+            if (!activeChatFriend) {
+                msgBox.innerHTML = '<div style="text-align: center; color: #888; margin-top: 50px;">اختر صديقاً من القائمة لبدء المحادثة</div>';
+                return;
+            }
+
+            const roomId = getChatRoomId(currentUser.username, activeChatFriend);
+            
+            db.ref(`chats/${roomId}`).on('value', snap => {
+                msgBox.innerHTML = '';
+                if (!snap.exists()) {
+                    msgBox.innerHTML = '<div style="text-align: center; color: #aaa;">ابدأ أول رسالة في المحادثة!</div>';
+                    return;
+                }
+                snap.forEach(child => {
+                    const msg = child.val();
+                    const isMe = msg.sender === currentUser.username;
+                    msgBox.innerHTML += `
+                        <div class="chat-msg ${isMe ? 'me' : 'other'}">
+                            <small style="font-size:10px; display:block; opacity:0.8;">${msg.sender}</small>
+                            ${msg.text}
+                        </div>
+                    `;
+                });
+                msgBox.scrollTop = msgBox.scrollHeight;
+            });
+        }
+
+        function sendChatMessage() {
+            const input = document.getElementById('chat-input-msg');
+            const text = input.value.trim();
+            if (!text) return;
+            if (!activeChatFriend) return alert("اختر صديقاً أولاً لإرسال الرسالة!");
+
+            const roomId = getChatRoomId(currentUser.username, activeChatFriend);
+            db.ref(`chats/${roomId}`).push({
+                sender: currentUser.username,
+                text: text,
+                time: Date.now()
+            });
+
+            input.value = '';
+        }
+
+        // --- 7. ADMIN DASHBOARD LOGIC ---
         function openAdminModal() {
             document.getElementById('admin-modal').style.display = 'flex';
             
@@ -588,7 +765,7 @@
             }
         }
 
-        // --- 7. ROCK PAPER SCISSORS GAME ---
+        // --- 8. ROCK PAPER SCISSORS GAME ---
         function openGameRPS() { document.getElementById('rps-modal').style.display = 'flex'; }
         
         function playRPS(choice) {
@@ -613,9 +790,13 @@
             }
         }
 
-        // --- 8. SOCIAL & UTILS ---
+        // --- 9. MODALS NAVIGATION ---
         function openSocialModal() { document.getElementById('social-modal').style.display = 'flex'; }
+        function openChatModal() { document.getElementById('chat-modal').style.display = 'flex'; }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+        function closeAllModals() {
+            document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+        }
 
         function changeAvatar() {
             const newSeed = prompt("أدخل اسماً أو كلمة لتوليد صورة جديدة:");
