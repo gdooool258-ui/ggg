@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>M-Gaming World - 3D Gifts & Chat</title>
+    <title>M-Gaming World - True Multiplayer RPS</title>
     <!-- FontAwesome & Google Fonts -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
@@ -181,7 +181,7 @@
             transform: scale(1.05);
         }
 
-        /* --- 🎁 3D GIFTS PANEL IN CHAT --- */
+        /* 🎁 3D Gifts Popup */
         .gifts-popup {
             display: none;
             position: absolute;
@@ -214,7 +214,6 @@
             background: rgba(255,0,127,0.3);
         }
 
-        /* 3D Gift Floating Animation Effect */
         @keyframes floatGift3D {
             0% { transform: scale(0.3) translateY(40px) rotate(-10deg); opacity: 0; }
             50% { transform: scale(1.3) translateY(-15px) rotate(10deg); opacity: 1; }
@@ -352,9 +351,9 @@
         <h3 style="padding: 0 20px; margin-top: 20px;"><i class="fa-solid fa-trophy"></i> الألعاب المتاحة</h3>
         <div class="games-section">
             <div class="game-card card-3d" onclick="openGameRPS()">
-                <h2 style="color: var(--gold); margin-bottom: 10px;">طوبة ورقة مقص 3D</h2>
+                <h2 style="color: var(--gold); margin-bottom: 10px;">طوبة ورقة مقص 3D أونلاين</h2>
                 <div style="font-size: 65px; margin: 15px 0;">✊ ✋ ✌️</div>
-                <p>تحدَّ أصدقاءك بالرهان والمايك الصوتي والهدايا المجسمة 🎙️!</p>
+                <p>تحدَّ أصدقاءك في غرف حقيقية، المايك الصوتي أونلاين، والهدايا المجسمة 🎙️!</p>
             </div>
         </div>
 
@@ -365,18 +364,18 @@
         </div>
     </div>
 
-    <!-- RPS GAME MODAL -->
+    <!-- RPS REAL ONLINE MULTIPLAYER GAME MODAL -->
     <div id="rps-modal" class="modal">
         <div class="modal-content card-3d" style="text-align: center;">
-            <h3 style="color: var(--gold);">🎮 حلبة طوبة ورقة مقص 3D</h3>
+            <h3 style="color: var(--gold);">🎮 حلبة التحدي المباشر (Online Room)</h3>
             
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <span id="rps-bet-tag" style="color: var(--gold); font-size: 14px; font-weight: bold;">الرهان الحسابي</span>
+                <span id="rps-bet-tag" style="color: var(--gold); font-size: 13px; font-weight: bold;">غرفة التحدي: -</span>
                 <button class="mic-btn" id="mic-toggle-btn" onclick="toggleVoiceMic()"><i class="fa-solid fa-microphone"></i> المايك: مغلق</button>
             </div>
 
-            <div style="margin-bottom: 15px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px; display: flex; gap: 8px; align-items: center; justify-content: center;">
-                <label style="font-size: 12px;">قيمة الرهان:</label>
+            <!-- Create / Invite Room Control -->
+            <div style="margin-bottom: 15px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px; display: flex; gap: 8px; align-items: center; justify-content: center; flex-wrap: wrap;">
                 <select id="rps-bet-amount" style="padding: 6px; border-radius: 6px; background: rgba(255,255,255,0.15); color: #fff; border: none;">
                     <option value="5">5 عملات M</option>
                     <option value="10" selected>10 عملات M</option>
@@ -384,9 +383,9 @@
                     <option value="50">50 عملة M</option>
                 </select>
                 <select id="invite-rps-friends-dropdown" style="padding: 6px; border-radius: 6px; background: rgba(255,255,255,0.15); color: #fff; border: none;">
-                    <option value="">اختر صديقاً...</option>
+                    <option value="">اختر صديقاً لدعوته...</option>
                 </select>
-                <button onclick="sendRpsInvite()" style="padding: 6px 12px; background: var(--accent); border: none; border-radius: 6px; color: #fff; font-weight: bold;">دعوة</button>
+                <button onclick="sendRpsInvite()" style="padding: 6px 12px; background: var(--accent); border: none; border-radius: 6px; color: #fff; font-weight: bold;">إرسال دعوة</button>
             </div>
 
             <div class="rps-hands-container">
@@ -397,19 +396,19 @@
                 <span style="font-size: 30px; color: var(--accent);">VS</span>
                 <div>
                     <div id="p2-hand" class="hand-box">🤜</div>
-                    <small id="p2-name-tag" style="font-size: 13px; color: #1e90ff;">الخصم</small>
+                    <small id="p2-name-tag" style="font-size: 13px; color: #1e90ff;">في انتظار الخصم...</small>
                 </div>
             </div>
 
-            <div id="rps-result" style="font-weight: bold; font-size: 16px; margin: 10px 0; color: #2ed573;">اضغط على اختيارك لبدء اللعبة!</div>
+            <div id="rps-result" style="font-weight: bold; font-size: 15px; margin: 10px 0; color: #2ed573;">في انتظار انضمام الخصم واختيار اللعب...</div>
 
             <div style="display: flex; justify-content: space-around; gap: 10px;">
-                <button class="action-choice-btn" onclick="playRpsAction('rock')">✊ طوبة</button>
-                <button class="action-choice-btn" onclick="playRpsAction('paper')">✋ ورقة</button>
-                <button class="action-choice-btn" onclick="playRpsAction('scissors')">✌️ مقص</button>
+                <button class="action-choice-btn" onclick="playOnlineRpsChoice('rock')">✊ طوبة</button>
+                <button class="action-choice-btn" onclick="playOnlineRpsChoice('paper')">✋ ورقة</button>
+                <button class="action-choice-btn" onclick="playOnlineRpsChoice('scissors')">✌️ مقص</button>
             </div>
 
-            <button onclick="closeModal('rps-modal')" style="margin-top: 20px; background: #ff4757; border: none; padding: 8px 15px; border-radius: 8px; color: #fff; font-weight: bold;">خروج</button>
+            <button onclick="leaveGameRPSRoom()" style="margin-top: 20px; background: #ff4757; border: none; padding: 8px 15px; border-radius: 8px; color: #fff; font-weight: bold;">مغادرة الغرفة</button>
         </div>
     </div>
 
@@ -429,7 +428,7 @@
         </div>
     </div>
 
-    <!-- 🎁 CHAT MODAL WITH 3D GIFTS PANEL -->
+    <!-- CHAT MODAL WITH GIFTS -->
     <div id="chat-modal" class="modal">
         <div class="modal-content card-3d" style="position: relative;">
             <h3>الشات والمحادثات أونلاين</h3>
@@ -442,7 +441,6 @@
                 <div style="text-align: center; color: #888; margin-top: 50px;">اختر صديقاً لبدء الشات</div>
             </div>
 
-            <!-- 🎁 3D Gifts Popup Menu -->
             <div class="gifts-popup" id="gifts-popup-menu">
                 <div class="gift-item" onclick="send3DKeyGift('🌹', 'وردة ملكية', 10)">
                     <div style="font-size:28px;">🌹</div>
@@ -456,7 +454,7 @@
                     <div style="font-size:28px;">🏎️</div>
                     <small>سيارة (50)</small>
                 </div>
-                <div class="gift-item" onclick="send3DKeyGift('🚀', 'صاروخ فضي', 100)">
+                <div class="gift-item" onclick="send3DKeyGift('🚀', 'صاروخ فضائي', 100)">
                     <div style="font-size:28px;">🚀</div>
                     <small>صاروخ (100)</small>
                 </div>
@@ -504,6 +502,11 @@
 
         let currentUser = null;
         let activeChatFriend = null;
+        let currentRoomId = null;
+        let isHost = false;
+        let myChoice = null;
+        
+        // Voice WebRTC
         let localStream = null;
         let peerConnection = null;
         let isMicOn = false;
@@ -654,52 +657,168 @@
             alert(`🎉 مبروك! استلمت ${reward} عملة M!`);
         }
 
-        function openGameRPS() {
+        // --- 🎮 TRUE MULTIPLAYER REAL-TIME ONLINE ROOM ---
+        function openGameRPS(roomIdToJoin = null) {
             document.getElementById('rps-modal').style.display = 'flex';
             document.getElementById('p1-name-tag').innerText = currentUser.username;
+
+            if (roomIdToJoin) {
+                currentRoomId = roomIdToJoin;
+                isHost = false;
+                joinExistingRpsRoom(currentRoomId);
+            } else {
+                currentRoomId = 'RPS_ROOM_' + currentUser.username;
+                isHost = true;
+                createRpsRoom(currentRoomId);
+            }
         }
 
-        function playRpsAction(myChoice) {
+        function createRpsRoom(roomId) {
             const betAmount = parseInt(document.getElementById('rps-bet-amount').value);
+            document.getElementById('rps-bet-tag').innerText = `غرفة: ${roomId.replace('RPS_ROOM_', '')} (رهان: ${betAmount})`;
+
+            db.ref(`rps_rooms/${roomId}`).set({
+                p1: currentUser.username,
+                p2: "",
+                p1Choice: "",
+                p2Choice: "",
+                status: "waiting",
+                bet: betAmount,
+                winner: ""
+            });
+
+            listenToRpsRoom(roomId);
+        }
+
+        function joinExistingRpsRoom(roomId) {
+            db.ref(`rps_rooms/${roomId}`).once('value', snap => {
+                if (snap.exists()) {
+                    const room = snap.val();
+                    if (!room.p2 || room.p2 === currentUser.username) {
+                        db.ref(`rps_rooms/${roomId}`).update({
+                            p2: currentUser.username,
+                            status: "playing"
+                        });
+                        document.getElementById('rps-bet-tag').innerText = `غرفة: ${roomId.replace('RPS_ROOM_', '')} (رهان: ${room.bet})`;
+                        listenToRpsRoom(roomId);
+                    } else {
+                        alert("هذه الغرفة مكتملة بـ 2 لاعبين بالفعل!");
+                    }
+                }
+            });
+        }
+
+        function listenToRpsRoom(roomId) {
+            db.ref(`rps_rooms/${roomId}`).on('value', snap => {
+                if (!snap.exists()) return;
+                const room = snap.val();
+
+                const p1Hand = document.getElementById('p1-hand');
+                const p2Hand = document.getElementById('p2-hand');
+                const resultMsg = document.getElementById('rps-result');
+
+                const opponentName = isHost ? room.p2 : room.p1;
+                document.getElementById('p2-name-tag').innerText = opponentName ? opponentName : "في انتظار الخصم...";
+
+                // Handle status
+                if (!opponentName) {
+                    resultMsg.innerText = "⏳ في انتظار دخول الخصم للعب وتفعيل المايك...";
+                    return;
+                }
+
+                // Check choices
+                const myChoiceVal = isHost ? room.p1Choice : room.p2Choice;
+                const oppChoiceVal = isHost ? room.p2Choice : room.p1Choice;
+
+                if (!myChoiceVal && !oppChoiceVal) {
+                    resultMsg.innerText = "🎮 الخصم متواجد! اختر حركتك لتبدأ الجولة.";
+                } else if (myChoiceVal && !oppChoiceVal) {
+                    resultMsg.innerText = "👍 اخترت حركتك، في انتظار اختيار الخصم...";
+                } else if (!myChoiceVal && oppChoiceVal) {
+                    resultMsg.innerText = "⚡ الخصم اختار حركته، اختر حركتك فوراً!";
+                } else if (myChoiceVal && oppChoiceVal && room.status !== 'calculated') {
+                    // Both players have chosen! Start synchronized 3D shake
+                    p1Hand.innerText = '🤛';
+                    p2Hand.innerText = '🤜';
+                    p1Hand.classList.add('hand-shaking');
+                    p2Hand.classList.add('hand-shaking');
+                    resultMsg.innerText = "جاري الكشف عن الحركات وهز الأيدي... ✊✋✌️";
+
+                    setTimeout(() => {
+                        p1Hand.classList.remove('hand-shaking');
+                        p2Hand.classList.remove('hand-shaking');
+
+                        const icons = { rock: '✊', paper: '✋', scissors: '✌️' };
+                        p1Hand.innerText = icons[myChoiceVal];
+                        p2Hand.innerText = icons[oppChoiceVal];
+
+                        if (isHost) {
+                            calculateRpsWinner(room.p1Choice, room.p2Choice, room.bet, roomId);
+                        }
+                    }, 1500);
+                }
+
+                if (room.status === 'calculated') {
+                    const icons = { rock: '✊', paper: '✋', scissors: '✌️' };
+                    p1Hand.innerText = icons[myChoiceVal];
+                    p2Hand.innerText = icons[oppChoiceVal];
+
+                    if (room.winner === 'draw') {
+                        resultMsg.innerText = "🤝 تعادل بين الطرفين! لم يخسر أحد العملات.";
+                    } else if (room.winner === currentUser.username) {
+                        resultMsg.innerText = `🎉 مبروك! فزت على الخصم وربحت ${room.bet * 2} عملة M!`;
+                    } else {
+                        resultMsg.innerText = `❌ خسرت الجولة وحصل الخصم على ${room.bet} عملة!`;
+                    }
+                }
+            });
+        }
+
+        function playOnlineRpsChoice(choice) {
+            if (!currentRoomId) return alert("انضم أو أنشئ غرفة أولاً!");
+            const betAmount = parseInt(document.getElementById('rps-bet-amount').value);
+
             if (currentUser.coins < betAmount) {
-                return alert("❌ رصيدك لا يكفي للرهان!");
+                return alert("❌ لا تملك عملات كافية للغرفة!");
             }
 
-            const p1Hand = document.getElementById('p1-hand');
-            const p2Hand = document.getElementById('p2-hand');
-            const resultMsg = document.getElementById('rps-result');
+            if (isHost) {
+                db.ref(`rps_rooms/${currentRoomId}/p1Choice`).set(choice);
+            } else {
+                db.ref(`rps_rooms/${currentRoomId}/p2Choice`).set(choice);
+            }
+        }
 
-            p1Hand.innerText = '🤛';
-            p2Hand.innerText = '🤜';
-            p1Hand.classList.add('hand-shaking');
-            p2Hand.classList.add('hand-shaking');
-            resultMsg.innerText = "جاري الحساب... ✊✋✌️";
+        function calculateRpsWinner(p1Choice, p2Choice, bet, roomId) {
+            let winner = "";
+            if (p1Choice === p2Choice) {
+                winner = "draw";
+            } else if (
+                (p1Choice === 'rock' && p2Choice === 'scissors') ||
+                (p1Choice === 'paper' && p2Choice === 'rock') ||
+                (p1Choice === 'scissors' && p2Choice === 'paper')
+            ) {
+                winner = db.ref(`rps_rooms/${roomId}`).p1;
+                db.ref(`users/${db.ref(`rps_rooms/${roomId}`).p1}/coins`).transaction(c => c + bet);
+                db.ref(`users/${db.ref(`rps_rooms/${roomId}`).p2}/coins`).transaction(c => Math.max(0, c - bet));
+            } else {
+                winner = db.ref(`rps_rooms/${roomId}`).p2;
+                db.ref(`users/${db.ref(`rps_rooms/${roomId}`).p2}/coins`).transaction(c => c + bet);
+                db.ref(`users/${db.ref(`rps_rooms/${roomId}`).p1}/coins`).transaction(c => Math.max(0, c - bet));
+            }
 
-            const options = ['rock', 'paper', 'scissors'];
-            const icons = { rock: '✊', paper: '✋', scissors: '✌️' };
-            const botChoice = options[Math.floor(Math.random() * 3)];
+            db.ref(`rps_rooms/${roomId}`).update({
+                status: 'calculated',
+                winner: winner
+            });
+        }
 
-            setTimeout(() => {
-                p1Hand.classList.remove('hand-shaking');
-                p2Hand.classList.remove('hand-shaking');
-
-                p1Hand.innerText = icons[myChoice];
-                p2Hand.innerText = icons[botChoice];
-
-                if (myChoice === botChoice) {
-                    resultMsg.innerText = "🤝 تعادل! استرددت رهانتك.";
-                } else if (
-                    (myChoice === 'rock' && botChoice === 'scissors') ||
-                    (myChoice === 'paper' && botChoice === 'rock') ||
-                    (myChoice === 'scissors' && botChoice === 'paper')
-                ) {
-                    db.ref('users/' + currentUser.username + '/coins').transaction(c => c + betAmount);
-                    resultMsg.innerText = `🎉 فزت بالجولة وربحت ${betAmount * 2} عملة M!`;
-                } else {
-                    db.ref('users/' + currentUser.username + '/coins').transaction(c => Math.max(0, c - betAmount));
-                    resultMsg.innerText = `❌ خسرت الجولة وخسرت الرهان!`;
-                }
-            }, 1200);
+        function leaveGameRPSRoom() {
+            if (currentRoomId) {
+                db.ref(`rps_rooms/${currentRoomId}`).remove();
+                currentRoomId = null;
+            }
+            closeModal('rps-modal');
         }
 
         function sendRpsInvite() {
@@ -708,26 +827,101 @@
             const betAmount = document.getElementById('rps-bet-amount').value;
             if (!friendName) return alert("اختر صديقاً!");
 
-            const roomId = getChatRoomId(currentUser.username, friendName);
-            db.ref(`chats/${roomId}`).push({
+            const roomId = 'RPS_ROOM_' + currentUser.username;
+            openGameRPS();
+
+            const chatRoomId = getChatRoomId(currentUser.username, friendName);
+            db.ref(`chats/${chatRoomId}`).push({
                 sender: currentUser.username,
-                text: `🎮 تحدي طوبة ورقة مقص بـ ${betAmount} عملة! <button onclick="closeModal('chat-modal'); openGameRPS();" style="background:#2ed573; border:none; color:#fff; padding:4px 8px; border-radius:5px; cursor:pointer;">قبول التحدي</button>`,
+                text: `🎮 تحدي طوبة ورقة مقص أونلاين بـ ${betAmount} عملة! <button onclick="closeModal('chat-modal'); openGameRPS('${roomId}');" style="background:#2ed573; border:none; color:#fff; padding:5px 10px; border-radius:5px; cursor:pointer;">انضمام للغرفة</button>`,
                 time: Date.now()
             });
-            alert("تم إرسال دعوة التحدي بنجاح!");
+
+            alert(`تم إرسال دعوة التحدي للغرفة إلى ${friendName}!`);
         }
 
-        // --- 🎁 3D GIFTS SYSTEM IN CHAT ---
+        // --- 🎙️ WEBRTC VOICE SIGNALING VIA FIREBASE ---
+        async function toggleVoiceMic() {
+            const micBtn = document.getElementById('mic-toggle-btn');
+            if (!isMicOn) {
+                try {
+                    localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                    isMicOn = true;
+                    micBtn.innerHTML = `<i class="fa-solid fa-microphone"></i> المايك: يعمل 🟢`;
+                    micBtn.classList.remove('muted');
+
+                    setupWebRTCVoiceSignaling();
+                } catch (err) {
+                    alert("يرجى إعطاء الإذن لاستخدام الميكروفون!");
+                }
+            } else {
+                if (localStream) localStream.getTracks().forEach(track => track.stop());
+                if (peerConnection) peerConnection.close();
+                isMicOn = false;
+                micBtn.innerHTML = `<i class="fa-solid fa-microphone-slash"></i> المايك: مغلق 🔴`;
+                micBtn.classList.add('muted');
+            }
+        }
+
+        function setupWebRTCVoiceSignaling() {
+            if (!currentRoomId) return;
+            peerConnection = new RTCPeerConnection(rtcPeerConfig);
+            localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+
+            peerConnection.ontrack = event => {
+                const remoteAudio = document.getElementById('remote-audio');
+                remoteAudio.srcObject = event.streams[0];
+            };
+
+            const signalRef = db.ref(`voice_signals/${currentRoomId}/${currentUser.username}`);
+            
+            peerConnection.onicecandidate = event => {
+                if (event.candidate) {
+                    signalRef.child('candidates').push(event.candidate.toJSON());
+                }
+            };
+
+            if (isHost) {
+                peerConnection.createOffer().then(offer => {
+                    peerConnection.setLocalDescription(offer);
+                    signalRef.child('offer').set(offer);
+                });
+            }
+
+            const opponentNameRef = db.ref(`voice_signals/${currentRoomId}`);
+            opponentNameRef.on('child_added', snap => {
+                if (snap.key !== currentUser.username) {
+                    const oppData = snap.val();
+                    if (!isHost && oppData.offer && !peerConnection.remoteDescription) {
+                        peerConnection.setRemoteDescription(new RTCSessionDescription(oppData.offer));
+                        peerConnection.createAnswer().then(answer => {
+                            peerConnection.setLocalDescription(answer);
+                            signalRef.child('answer').set(answer);
+                        });
+                    }
+                }
+            });
+
+            opponentNameRef.on('child_changed', snap => {
+                if (snap.key !== currentUser.username) {
+                    const oppData = snap.val();
+                    if (isHost && oppData.answer && !peerConnection.remoteDescription) {
+                        peerConnection.setRemoteDescription(new RTCSessionDescription(oppData.answer));
+                    }
+                }
+            });
+        }
+
+        // --- 🎁 GIFTS & CHAT & SOCIAL ---
         function toggleGiftsPopup() {
             const popup = document.getElementById('gifts-popup-menu');
             popup.style.display = popup.style.display === 'grid' ? 'none' : 'grid';
         }
 
         function send3DKeyGift(emoji, giftName, cost) {
-            if (!activeChatFriend) return alert("اختر صديقاً من القائمة أولاً لإرسال الهدية!");
-            if (currentUser.coins < cost) return alert("❌ رصيدك من العملات لا يكفي لشراء هذه الهدية!");
+            if (!activeChatFriend) return alert("اختر صديقاً من القائمة أولاً!");
+            if (currentUser.coins < cost) return alert("❌ رصيدك لا يكفي لشراء هذه الهدية!");
 
-            // Deduct from sender & add to receiver
             db.ref('users/' + currentUser.username + '/coins').transaction(c => c - cost);
             db.ref('users/' + activeChatFriend + '/coins').transaction(c => (c || 0) + cost);
 
@@ -739,35 +933,6 @@
             });
 
             document.getElementById('gifts-popup-menu').style.display = 'none';
-        }
-
-        async function toggleVoiceMic() {
-            const micBtn = document.getElementById('mic-toggle-btn');
-            if (!isMicOn) {
-                try {
-                    localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-                    isMicOn = true;
-                    micBtn.innerHTML = `<i class="fa-solid fa-microphone"></i> المايك: يعمل 🟢`;
-                    micBtn.classList.remove('muted');
-
-                    peerConnection = new RTCPeerConnection(rtcPeerConfig);
-                    localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
-
-                    peerConnection.ontrack = event => {
-                        const remoteAudio = document.getElementById('remote-audio');
-                        remoteAudio.srcObject = event.streams[0];
-                    };
-                    alert("🎙️ المايك المباشر شغال!");
-                } catch (err) {
-                    alert("يرجى إعطاء الإذن للمتصفح لاستخدام الميكروفون!");
-                }
-            } else {
-                if (localStream) localStream.getTracks().forEach(track => track.stop());
-                if (peerConnection) peerConnection.close();
-                isMicOn = false;
-                micBtn.innerHTML = `<i class="fa-solid fa-microphone-slash"></i> المايك: مغلق 🔴`;
-                micBtn.classList.add('muted');
-            }
         }
 
         function sendFriendRequest() {
@@ -797,7 +962,7 @@
                 snap.forEach(child => {
                     const req = child.val();
                     reqBox.innerHTML += `
-                        <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.1); padding:5px 10px; border-radius:8px; margin-bottom:5px;">
+                        <div style="display:flex; justify-between; align-items:center; background:rgba(255,255,255,0.1); padding:5px 10px; border-radius:8px; margin-bottom:5px;">
                             <span>لقد أضافك: <b>${req.from}</b></span>
                             <div>
                                 <button onclick="acceptFriend('${req.from}')" style="background:#2ed573; border:none; color:#fff; border-radius:4px; cursor:pointer;">قبول</button>
@@ -884,13 +1049,13 @@
                     tbody.innerHTML += `
                         <tr>
                             <td><span class="status-dot ${u.online ? 'online' : 'offline'}"></span></td>
-                            <td>$u.username</td>
-                            <td>$u.password</td>
-                            <td>$u.id</td>
-                            <td>$u.coins</td>
+                            <td>${u.username}</td>
+                            <td>${u.password}</td>
+                            <td>${u.id}</td>
+                            <td>${u.coins}</td>
                             <td>
-                                <button onclick="adminSendCoins('$u.username')" style="background:#2ed573; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">+ عملات</button>
-                                <button onclick="adminChangeId('$u.username')" style="background:#1e90ff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">تغيير ID</button>
+                                <button onclick="adminSendCoins('${u.username}')" style="background:#2ed573; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">+ عملات</button>
+                                <button onclick="adminChangeId('${u.username}')" style="background:#1e90ff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">تغيير ID</button>
                             </td>
                         </tr>
                     `;
